@@ -1,70 +1,67 @@
 #ifndef BLOCKCHAIN_H
 #define BLOCKCHAIN_H
 #include <iostream>
-#include <string> 
+#include <string>
 #include <vector>
 #include <tuple>
 #include <ctime>
 #include "block.h"
-#include "picosha2.h"
+#include "merkle.h"
+#include "..\..\lib\sha256_lib\picosha2.h"
+#include <boost/multiprecision/cpp_int.hpp>
 
 class Blockchain {
 private:
 	std::vector<Block> _blockchain;
-	std::vector<std::tuple<std::string, std::string>> _data;
+	std::map<std::string,std::string> _data;
+	std::string _merkleRoot;
 	std::time_t _timestamp;
-	unsigned int _proof;
+	boost::multiprecision::uint256_t _nonce;
 	std::string _hash;
 public:
-	Blockchain() {
+	Blockchain(std::string blockZeroPrevHash) {
+		std::cout << "Blockchain C'tor" << std::endl;
 		_blockchain.reserve(_blockchain.size() + 1);
-		std::string id = std::to_string(1);
-		std::time_t time = std::time(nullptr);
-		std::string timestamp = std::to_string(time);
-		std::string votes;
-		for (auto el : _data) { votes += " | " + std::get<0>(el) + " -> " + std::get<1>(el); }
-		std::string prevHash = "840b76115ab41fbc6ff6b0e8c3181e43dfc925d086815c6bfc17a86115b677a0";
-		std::string proof = std::to_string(100);
-		std::string hash = id + "," + timestamp + "," + votes + "," + prevHash + "," + proof;
-		hash = picosha2::hash256_hex_string(hash);
-		_blockchain.push_back(Block(1, time, _data, "840b76115ab41fbc6ff6b0e8c3181e43dfc925d086815c6bfc17a86115b677a0", 100, hash));
+		_timestamp = std::time(nullptr);
+		unsigned int id = 0;
+		_merkleRoot = merkle::get_merkle_root_hash(_data);
+		std::string toHash = std::to_string(id) + "," + std::to_string(_timestamp) + "," + _merkleRoot + "," + blockZeroPrevHash;
+		validate_nonce(picosha2::hash256_hex_string(toHash));
+		_blockchain.push_back(Block(id, _timestamp, blockZeroPrevHash, _merkleRoot, _nonce, _hash, _data));
 	}
-
-	void addVote(std::string sender, std::string recipient) { _data.reserve(_data.size() + 1); _data.push_back(std::make_tuple(sender, recipient)); }
 
 	void hash() {
-		std::string id = std::to_string(_blockchain.back().getId()+1);
-		std::string timestamp = std::to_string(_timestamp);
-		std::string votes;
-		for (auto el : _data) {	votes += " | " + std::get<0>(el) + " -> " + std::get<1>(el); }
-		std::string prevHash = _blockchain.back().getHash();
-		std::string proof = std::to_string(_proof);
-		std::string hash = id + "," + timestamp + "," + votes + "," + prevHash + "," + proof;
-		_hash = picosha2::hash256_hex_string(hash);
+		_merkleRoot = merkle::get_merkle_root_hash(_data);
+		std::string toHash = std::to_string(_blockchain.size()) + "," + std::to_string(_timestamp) + "," + _merkleRoot + "," + _blockchain.back().getHash();
+		validate_nonce(picosha2::hash256_hex_string(toHash));
 	}
 
-	void validate_proof() {
-		unsigned int proof = 0;
+	void validate_nonce(std::string const toHash) {
+		boost::multiprecision::uint256_t nonce = 0;
+		std::string hash;
 		while (true) {
-			unsigned int h = _blockchain.back().getProof() * proof;
-			std::string str = std::to_string(h);
-			std::string hex_str = picosha2::hash256_hex_string(str);
-			if (hex_str.substr(0, 4) == "0000") break;
-			proof++;
+			hash = toHash + nonce.str();
+			hash = picosha2::hash256_hex_string(hash);
+			if (hash.substr(0, 4) == "0000") break;
+			nonce++;
 		}
-		_proof = proof;
+		_nonce = nonce;
+		_hash = hash;
 	}
+
+	void addTx(std::string sender, std::string receiver) { _data.insert(std::pair<std::string, std::string>(sender, receiver));	}
 
 	void addBlock() {
 		_blockchain.reserve(_blockchain.size() + 1);
 		_timestamp = std::time(nullptr);
-		validate_proof();
 		hash();
-		_blockchain.push_back(Block(_blockchain.size() + 1, _timestamp, _data, _blockchain.back().getHash(), _proof, _hash));
+		_blockchain.push_back(Block(_blockchain.size(), _timestamp, _blockchain.back().getHash(), _merkleRoot, _nonce, _hash, _data));
 		_data.clear();
 	}
 
-	void print() { for (auto el : _blockchain) { std::cout << "\n########################\n"<<std::endl; el.print(); } }
+	void print() { for (auto el : _blockchain) { std::cout << "\n########################\n"<<std::endl; el.printBlock(); } }
+
+	~Blockchain() { std::cout << "Blockchain D'tor" << std::endl; }
 };
 
 #endif
