@@ -38,7 +38,7 @@ public:
 		_blockchain.push_back(new Block(id, _timestamp, blockZeroPrevHash, _merkleRoot, _nonce, _hash, _data));
 	}
 
-	std::time_t getDeadline() { return _deadline; }
+	std::time_t getDeadline() const { return _deadline; }
 	Storage* getStorage() { return &_storage; }
 
 	void setDifficulty(unsigned int newDifficulty) { _difficulty = newDifficulty; }
