@@ -21,16 +21,6 @@ namespace merkle {
     }
 
     template <class T>
-    bool isEmpty(T const& data) {
-        int it = 0;
-        for (auto& [key, value] : data) {
-            it++;
-            if (it > 0) return false;
-        }
-        if (it == 0) return true;
-    }
-
-    template <class T>
     std::string get_merkle_root_hash(T const& data) {
         if (data.size() == 0) return "empty";
         std::vector<std::string> hashes, merkleTree;
