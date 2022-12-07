@@ -1,0 +1,1 @@
+g++ client.cpp -o client -lboost_system -lboost_thread -pthread -std=c++17
