@@ -1,50 +1,83 @@
+// Copyright (c) 2003-2022 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #ifndef SENDER_H
 #define SENDER_H
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include <cstdlib>
+#include <deque>
 #include <iostream>
+#include <thread>
 #include <fstream>
-#include <vector>
-#include <string.h>
-#include <arpa/inet.h>
+#include <string>
+#include <boost/asio.hpp>
+#include "blockMessage.hpp"
+
 class Sender {
 private:
-    size_t _size = 2048;
-    struct sockaddr_in _serverAddr;
-    int _sockfd;
-public:
-    Sender() = default;
+    boost::asio::io_context& _io_context;
+    boost::asio::ip::tcp::socket _socket;
+    BlockMessage _readBlock;
+    std::deque<BlockMessage> _writeBlocks;
+    char _buffer[BlockMessage::maxBodyLength];
 
-    Sender(char *ip, int port) {
-        _sockfd = socket(AF_INET, SOCK_STREAM, 0);
-        if(_sockfd == -1) { perror("Error in socket"); exit(1); }
-        _serverAddr.sin_family = AF_INET;
-        _serverAddr.sin_port = port;
-        _serverAddr.sin_addr.s_addr = inet_addr(ip);
+    void doConnect(const boost::asio::ip::tcp::resolver::results_type& endpoints) { boost::asio::async_connect(_socket, endpoints,
+      [this](boost::system::error_code ec, boost::asio::ip::tcp::endpoint) { if (!ec) doReadHeader(); }); }
 
-        int connection = connect(_sockfd, (struct sockaddr*)&_serverAddr, sizeof(_serverAddr));
-        if(connection == -1) { perror("Error in socket"); exit(1); }
-
-        std::cout << "Sender C'tor" << std::endl;
+    void doReadHeader() {
+      boost::asio::async_read(_socket, boost::asio::buffer(_readBlock.data(), BlockMessage::headerLength),
+        [this](boost::system::error_code ec, std::size_t /*length*/) {
+          if (!ec && _readBlock.decodeHeader()) doReadBody();
+          else _socket.close();
+        });
     }
 
-    bool sendBlock(std::string fileName) {
-        char data[_size] = {0};
-        FILE *fp = fopen(fileName.c_str(), "r");
-        if (fp == NULL) { perror("Error in reading file."); exit(1); return false; }
+    void doReadBody() {
+      boost::asio::async_read(_socket, boost::asio::buffer(_readBlock.body(), _readBlock.bodyLength()),
+        [this](boost::system::error_code ec, std::size_t /*length*/) {
+          if (!ec) {
+            std::ofstream file("receivedBlock.json");
+            file.write(_readBlock.body(), _readBlock.bodyLength());
+            file.close();
+            doReadHeader();
+          }
+          else _socket.close();
+        });
+    }
 
-        while(fgets(data, _size, fp) != NULL) {
-            if (send(_sockfd, data, sizeof(data), 0) == -1) { perror("Error in sending block."); exit(1); return false; }
-            bzero(data, _size);
-        }
-        std::cout <<"File data sent successfully."<< std::endl;
-	    std::cout <<"Closing the connection."<< std::endl;
-        close(_sockfd);
+    void doWrite() {
+      boost::asio::async_write(_socket, boost::asio::buffer(_writeBlocks.front().data(), _writeBlocks.front().length()),
+        [this](boost::system::error_code ec, std::size_t /*length*/) {
+          if (!ec) {
+            _writeBlocks.pop_front();
+            if (!_writeBlocks.empty()) doWrite();
+          }
+          else _socket.close();
+        });
+    }
+public:
+    Sender() = default;
+    Sender(boost::asio::io_context& io_context, const boost::asio::ip::tcp::resolver::results_type& endpoints) : _io_context(io_context), _socket(io_context) { doConnect(endpoints); }
+
+    void write(const BlockMessage& block) {
+      boost::asio::post(_io_context,
+        [this, block]() {
+          bool write_in_progress = !_writeBlocks.empty();
+          _writeBlocks.push_back(block);
+          if (!write_in_progress) doWrite();
+        });
+    }
+
+    bool saveToBuffer(const std::string &fileName) {
+        std::ifstream file(fileName, std::ios::in | std::ios::binary);
+        if (!file) return false;        
+        file.read(_buffer, BlockMessage::maxBodyLength);
+        file.close();
         return true;
     }
 
-    ~Sender() { std::cout << "Sender D'tor" << std::endl; }
+    const char * getBuffer() const { return _buffer; }
+
+    void close() { boost::asio::post(_io_context, [this]() { _socket.close(); }); }
 };
 
 #endif
