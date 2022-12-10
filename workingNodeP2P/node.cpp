@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <deque>
+#include <fstream>
 #include <unordered_set>
 #include <boost/asio.hpp>
 #include "session.h"
@@ -11,7 +12,6 @@ class Node {
 private:
   boost::asio::io_context& _io_context;
   boost::asio::ip::tcp::acceptor _acceptor;
-  Room _room;
   boost::asio::ip::tcp::socket _socket;
   chat_message _read_msg;
   std::deque<chat_message> _write_msgs;
@@ -19,7 +19,7 @@ private:
   void do_accept() {
     _acceptor.async_accept(
         [this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
-          if (!ec) std::make_shared<Session>(std::move(socket), _room)->start();
+          if (!ec) std::make_shared<Session>(std::move(socket))->start();
           do_accept();
         });
   }
@@ -82,8 +82,6 @@ int main(int argc, char* argv[]) {
 
     Node node(io_context, listenEndpoint);
     boost::asio::ip::tcp::resolver resolver(io_context);
-    auto connectEndpoint = resolver.resolve("127.0.0.1", argv[1]);
-    node.do_connect(connectEndpoint);
 
     // Client part of node
     if(argc > 3) {
@@ -94,11 +92,16 @@ int main(int argc, char* argv[]) {
     std::thread t([&io_context](){ io_context.run(); });
 
     char line[chat_message::max_body_length + 1];
-    while (std::cin.getline(line, chat_message::max_body_length + 1))
-    {
+    while (std::cin.getline(line, chat_message::max_body_length + 1)) {
+      std::string fileName(line);
+      fileName ="block_"+fileName+".json";
+      std::ifstream file(fileName, std::ios::in | std::ios::binary);
       chat_message msg;
-      msg.body_length(std::strlen(line));
-      std::memcpy(msg.body(), line, msg.body_length());
+      char buff[chat_message::max_body_length];
+      file.read(buff, chat_message::max_body_length);
+      file.close();
+      msg.body_length(std::strlen(buff));
+      std::memcpy(msg.body(), buff, msg.body_length());
       msg.encode_header();
       node.write(msg);
     }
