@@ -1,10 +1,12 @@
 #include <iostream>
 #include <string>
 #include <deque>
+#include <set>
 #include <fstream>
 #include <unordered_set>
 #include <boost/asio.hpp>
 #include "session.h"
+#include "socket_hash.h"
 #include "chat_message.hpp"
 #define SIZE 1024
 
@@ -13,62 +15,70 @@ private:
   boost::asio::io_context& _io_context;
   boost::asio::ip::tcp::acceptor _acceptor;
   boost::asio::ip::tcp::socket _socket;
-  chat_message _read_msg;
+  std::unordered_set<std::pair<std::string, unsigned short>, SocketHash> _peers;
   std::deque<chat_message> _write_msgs;
+  chat_message _read_msg;
 
-  void do_accept() {
+  void _accept() {
     _acceptor.async_accept(
-        [this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
-          if (!ec) std::make_shared<Session>(std::move(socket))->start();
-          do_accept();
-        });
+      [this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
+        if (!ec) {
+          _peers.insert({socket.remote_endpoint().address().to_string(), socket.remote_endpoint().port()});
+          std::make_shared<Session>(std::move(socket))->start();
+        }
+        _accept();
+      });
   }
 
-  void do_read_header() {
+  void _readHeader() {
     boost::asio::async_read(_socket, boost::asio::buffer(_read_msg.data(), chat_message::header_length),
         [this](boost::system::error_code ec, std::size_t /*length*/) {
-          if (!ec && _read_msg.decode_header()) do_read_body();
+          if (!ec && _read_msg.decode_header()) _readBody();
           else _socket.close();
         });
   }
 
-  void do_read_body() {
+  void _readBody() {
     boost::asio::async_read(_socket, boost::asio::buffer(_read_msg.body(), _read_msg.body_length()),
         [this](boost::system::error_code ec, std::size_t /*length*/) {
           if (!ec) {
             std::cout.write(_read_msg.body(), _read_msg.body_length());
             std::cout << "\n";
-            do_read_header();
+            _readHeader();
           }
           else _socket.close();
         });
   }
 
-  void do_write() {
+  void _write() {
     boost::asio::async_write(_socket, boost::asio::buffer(_write_msgs.front().data(), _write_msgs.front().length()),
         [this](boost::system::error_code ec, std::size_t /*length*/) {
           if (!ec) {
             _write_msgs.pop_front();
-            if (!_write_msgs.empty()) do_write();
+            if (!_write_msgs.empty()) _write();
           }
           else _socket.close();
         });
   }
 public:
-  Node(boost::asio::io_context& io_context, const boost::asio::ip::tcp::endpoint& endpoint) : _io_context(io_context), _acceptor(io_context, endpoint), _socket(io_context) { do_accept(); }
+  Node(boost::asio::io_context& io_context, const boost::asio::ip::tcp::endpoint& endpoint) : _io_context(io_context), _acceptor(io_context, endpoint), _socket(io_context) { _accept(); std::cout << "Node C'tor" << std::endl; }
 
-  void do_connect(const boost::asio::ip::tcp::resolver::results_type& endpoints) { boost::asio::async_connect(_socket, endpoints, [this](boost::system::error_code ec, boost::asio::ip::tcp::endpoint) { if (!ec) do_read_header(); }); }
+  void do_connect(const boost::asio::ip::tcp::resolver::results_type& endpoints) {
+    boost::asio::async_connect(_socket, endpoints,
+      [this](boost::system::error_code ec, boost::asio::ip::tcp::endpoint) { if (!ec) _readHeader(); }); }
 
   void write(const chat_message& msg) {
     boost::asio::post(_io_context,
-        [this, msg]() {
-          bool write_in_progress = !_write_msgs.empty();
-          _write_msgs.push_back(msg);
-          if (!write_in_progress) do_write();
-        });
+      [this, msg]() {
+        bool write_in_progress = !_write_msgs.empty();
+        _write_msgs.push_back(msg);
+        if (!write_in_progress) _write();
+      });
   }
 
   void close() { boost::asio::post(_io_context, [this]() { _socket.close(); }); }
+
+  ~Node() { std::cout << "Node D'tor" << std::endl;}
 };
 
 
