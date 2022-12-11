@@ -30,6 +30,15 @@ public:
 	std::string getHash() const { return _hash; }
 	const std::unordered_map<std::string, std::string> &getData() { return _data; }
 
+	void printBlock() {
+		std::cout << "id         : " << _id << std::endl;
+		std::cout << "timestamp  : " << _timestamp << std::endl;
+		std::cout << "prevHash   : " << _prevHash << std::endl;
+		std::cout << "merkleRoot : " << _merkleRoot << std::endl;
+		std::cout << "nonce      : " << _nonce << std::endl;
+		std::cout << "hash:      : " << _hash << std::endl;
+	}
+	
 	~Block() { std::cout << "Block D'tor" << std::endl; }
 };
 
