@@ -9,8 +9,6 @@
 class MempoolRoom {
 private:
   std::set<std::shared_ptr<Voter>> _voter;
-  enum { max_recent_msgs = 100 };
-  std::deque<Message> _recent_msgs;
 public:
   void join(std::shared_ptr<Voter> voter) { _voter.insert(voter); }
 
