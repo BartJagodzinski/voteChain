@@ -4,18 +4,18 @@
 #include <iostream>
 #include <deque>
 #include "peer.h"
-#include "chat_message.hpp"
+#include "message.hpp"
 
 class Session : public Peer, public std::enable_shared_from_this<Session> {
 private:
   boost::asio::ip::tcp::socket _socket;
   std::shared_ptr<Peer> _peer;
-  chat_message _read_msg;
-  std::deque<chat_message> _write_msgs;
+  Message _read_msg;
+  std::deque<Message> _write_msgs;
 
   void _readHeader() {
     auto self(shared_from_this());
-      boost::asio::async_read(_socket, boost::asio::buffer(_read_msg.data(), chat_message::header_length),
+      boost::asio::async_read(_socket, boost::asio::buffer(_read_msg.data(), Message::header_length),
         [this, self](boost::system::error_code ec, std::size_t /*length*/) {
           if (!ec && _read_msg.decode_header()) _readBody();
         });
@@ -48,7 +48,7 @@ public:
 
   void start() { _readHeader(); }
 
-  void deliver(const chat_message& msg) {
+  void deliver(const Message& msg) {
     bool write_in_progress = !_write_msgs.empty();
     _write_msgs.push_back(msg);
     if (!write_in_progress) _write();
