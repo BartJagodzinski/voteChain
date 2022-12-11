@@ -15,7 +15,7 @@ private:
   boost::asio::io_context& _io_context;
   boost::asio::ip::tcp::acceptor _acceptor;
   boost::asio::ip::tcp::socket _socket;
-  std::unordered_set<std::pair<std::string, unsigned short>, UnorderedSetHash> _peers;
+  std::unordered_set<std::pair<std::string, unsigned short>, UnorderedSetHash<std::string, unsigned short>> _peers;
   std::deque<Message> _write_msgs;
   Message _read_msg;
 
