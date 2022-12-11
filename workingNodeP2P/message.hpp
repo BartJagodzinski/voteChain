@@ -1,15 +1,15 @@
-#ifndef CHAT_MESSAGE_HPP
-#define CHAT_MESSAGE_HPP
+#ifndef MESSAGE_HPP
+#define MESSAGE_HPP
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
-class chat_message {
+class Message {
 public:
     static constexpr std::size_t header_length = 4;
     static constexpr std::size_t max_body_length = 2048;
 
-    chat_message() : _body_lenght(0) {}
+    Message() : _body_lenght(0) {}
     const char* data() const { return _data; }
     char* data() { return _data; }
     std::size_t length() const { return header_length + _body_lenght; }
@@ -44,4 +44,4 @@ private:
     std::size_t _body_lenght;
 };
 
-#endif // CHAT_MESSAGE_HPP
+#endif
