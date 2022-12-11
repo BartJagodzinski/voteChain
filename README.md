@@ -4,4 +4,4 @@
 **json** → [https://github.com/nlohmann/json](https://github.com/nlohmann/json)   
 **boost** → [www.boost.org](https://www.boost.org/)   
 
-![alt text](https://github.com/[BartJagodzinski]/[voteChain]/blob/[main]/p2p.png?raw=true)
+![alt text](https://github.com/[BartJagodzinski]/[voteChain]/blob/[main]/img/p2p.PNG?raw=true)
