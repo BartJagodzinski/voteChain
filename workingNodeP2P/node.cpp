@@ -7,7 +7,7 @@
 #include <boost/asio.hpp>
 #include "session.h"
 #include "socket_hash.h"
-#include "chat_message.hpp"
+#include "message.hpp"
 #define SIZE 1024
 
 class Node {
@@ -16,8 +16,8 @@ private:
   boost::asio::ip::tcp::acceptor _acceptor;
   boost::asio::ip::tcp::socket _socket;
   std::unordered_set<std::pair<std::string, unsigned short>, SocketHash> _peers;
-  std::deque<chat_message> _write_msgs;
-  chat_message _read_msg;
+  std::deque<Message> _write_msgs;
+  Message _read_msg;
 
   void _accept() {
     _acceptor.async_accept(
@@ -31,7 +31,7 @@ private:
   }
 
   void _readHeader() {
-    boost::asio::async_read(_socket, boost::asio::buffer(_read_msg.data(), chat_message::header_length),
+    boost::asio::async_read(_socket, boost::asio::buffer(_read_msg.data(), Message::header_length),
         [this](boost::system::error_code ec, std::size_t /*length*/) {
           if (!ec && _read_msg.decode_header()) _readBody();
           else _socket.close();
@@ -67,7 +67,7 @@ public:
     boost::asio::async_connect(_socket, endpoints,
       [this](boost::system::error_code ec, boost::asio::ip::tcp::endpoint) { if (!ec) _readHeader(); }); }
 
-  void write(const chat_message& msg) {
+  void write(const Message& msg) {
     boost::asio::post(_io_context,
       [this, msg]() {
         bool write_in_progress = !_write_msgs.empty();
@@ -101,14 +101,14 @@ int main(int argc, char* argv[]) {
 
     std::thread t([&io_context](){ io_context.run(); });
 
-    char line[chat_message::max_body_length + 1];
-    while (std::cin.getline(line, chat_message::max_body_length + 1)) {
+    char line[Message::max_body_length + 1];
+    while (std::cin.getline(line, Message::max_body_length + 1)) {
       std::string fileName(line);
       fileName ="block_"+fileName+".json";
       std::ifstream file(fileName, std::ios::in | std::ios::binary);
-      chat_message msg;
-      char buff[chat_message::max_body_length];
-      file.read(buff, chat_message::max_body_length);
+      Message msg;
+      char buff[Message::max_body_length];
+      file.read(buff, Message::max_body_length);
       file.close();
       msg.body_length(std::strlen(buff));
       std::memcpy(msg.body(), buff, msg.body_length());
