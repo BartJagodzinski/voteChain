@@ -12,7 +12,7 @@ class MempoolSession : public Voter, public std::enable_shared_from_this<Mempool
 private:
   std::unordered_map<std::string, std::string> &_data;
   boost::asio::ip::tcp::socket _socket;
-  Room &_room;
+  MempoolRoom &_room;
   Message _read_msg;
 
   void _readHeader() {
@@ -39,7 +39,7 @@ private:
   }
 
 public:
-  MempoolSession(boost::asio::ip::tcp::socket socket, Room& room, std::unordered_map<std::string, std::string> &data) : _socket(std::move(socket)), _room(room), _data(data) {  std::cout << "MempoolSession C'tor" << std::endl; }
+  MempoolSession(boost::asio::ip::tcp::socket socket, MempoolRoom& room, std::unordered_map<std::string, std::string> &data) : _socket(std::move(socket)), _room(room), _data(data) {  std::cout << "MempoolSession C'tor" << std::endl; }
 
   void start() {
     _room.join(shared_from_this());
