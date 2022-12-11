@@ -6,7 +6,7 @@
 #include <unordered_set>
 #include <boost/asio.hpp>
 #include "session.h"
-#include "socket_hash.h"
+#include "unordered_set_hash.h"
 #include "message.hpp"
 #define SIZE 1024
 
@@ -15,7 +15,7 @@ private:
   boost::asio::io_context& _io_context;
   boost::asio::ip::tcp::acceptor _acceptor;
   boost::asio::ip::tcp::socket _socket;
-  std::unordered_set<std::pair<std::string, unsigned short>, SocketHash> _peers;
+  std::unordered_set<std::pair<std::string, unsigned short>, UnorderedSetHash> _peers;
   std::deque<Message> _write_msgs;
   Message _read_msg;
 
