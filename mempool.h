@@ -8,7 +8,7 @@
 class Mempool {
 private:
   	boost::asio::ip::tcp::acceptor _acceptor;
-	Room _room;
+	MempoolRoom _room;
 	std::unordered_map<std::string, std::string> _data;
 	std::time_t _deadline;
 	bool _isOpen = true;
