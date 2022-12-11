@@ -22,7 +22,6 @@ public:
 		: _id(id), _timestamp(timestamp), _prevHash(prevHash), _merkleRoot(merkleRoot), _nonce(nonce), _hash(hash), _data(data) { std::cout << "Block C'tor" << std::endl;	}
 
 	unsigned int getId() const { return _id; }
-	std::string getIdStr() const { return std::to_string(_id); }
 	std::time_t getTimestamp() const { return _timestamp; }
 	std::string getPrevHash() const { return _prevHash; }
 	std::string getMerkleRoot() const { return _merkleRoot; }
