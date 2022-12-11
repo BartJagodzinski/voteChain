@@ -15,7 +15,7 @@
 class Blockchain {
 private:
 	std::vector<Block*> _blockchain;
-	std::map<std::string,std::string> _data;
+	std::unordered_map<std::string,std::string> _data;
 	std::string _merkleRoot;
 	std::time_t _timestamp;
 	boost::multiprecision::uint256_t _nonce;
@@ -63,7 +63,7 @@ public:
 		_hash = hash;
 	}
 
-	void addTx(std::string sender, std::string receiver) { _data.insert(std::pair<std::string, std::string>(sender, receiver));	}
+	void addTx(std::string sender, std::string receiver) { _data.insert({sender, receiver}); }
 
 	void slidingWindow() {
 		if (_blockchain.size() > _slidingWindowSize) {
