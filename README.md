@@ -41,9 +41,9 @@ After finding the correct nonce and mining the block, node must send it to its p
    
 ![sendBlock](img/sendingBlock.PNG)   
    
-If node has received a block, it must verify its authenticity. 
+If node has received a block, it must verify its authenticity.    
 First it checks if previous block hash of received block points on last block in its own chain.
-   
+
 ```mermaid
 graph RL
 B[Last block -2]
