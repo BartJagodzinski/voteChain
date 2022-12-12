@@ -50,7 +50,7 @@ B2 -- prev. hash--> B1
 B1 -- prev. hash--> B
 ```
    
-If not, node asks peers about lenght of the chain (longest chain is valid because of amount of work that is needed to mine all blocks) and if owned chain is shorter than longest it asks for sending missing block(s). But if lenght of owned chain is the longest and received block points on non-existing block it is rejected by the node.   
+If not, node asks peers about lenght of the chain (longest chain is valid because of amount of work that is needed to mine all blocks) and if owned chain is shorter than longest it asks peers for sending missing block(s). But if lenght of owned chain is the longest and received block points on non-existing block it is rejected by the node.   
 
 However, if previous block hash points on last block in chain owned by node, it starts verifing votes included in received block by hashing txids until merkle root hash.   
     
