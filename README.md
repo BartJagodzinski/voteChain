@@ -5,7 +5,8 @@
 **boost** → [www.boost.org](https://www.boost.org/)   
 
 ### Mempool
-Mempool is constantly listening for new votes until deadline is reached. Deadline is the end of voting time set before start. When reached, mempool closes for new votes and waits for the accumulated pool of votes to be closed in blocks.   
+Mempool is constantly listening for new votes until deadline is reached. Deadline is the end of voting time set before start.    
+When reached, mempool closes for new votes and waits for the accumulated pool of votes to be closed in blocks.   
    
 ![mempool](img/mempool.PNG)   
     
@@ -20,7 +21,8 @@ Mining is about finding nonce. Node must encapsulate accumulated votes in block 
 
 </**block header**>    
     
-But if we hash that header output will always be the same, that is why we need nonce. Node increments nonce until hash of block matches target.   
+But if we hash that header output will always be the same, that is why we need nonce.     
+Node increments nonce until hash of block matches target.     
 
     
 ![mining](img/mining.PNG)   
