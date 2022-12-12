@@ -8,3 +8,4 @@
 ![mining](img/mining.PNG)   
 ![p2p](img/p2p.PNG)   
 ![sendBlock](img/sendingBlock.PNG)   
+![sendBlock](img/merkleRootHash.PNG)   
