@@ -55,4 +55,8 @@ B1 -- prev. hash--> B
 ```
    
 If not, node asks peers about lenght of the chain (longest chain is valid because of amount of work that is needed to mine all blocks) and 
+
+However, if previous block hash points on last block in chain owned by node, it starts verifing votes included in received block by hashing txids until merkle root hash.   
+### [Merkle root](https://learnmeabitcoin.com/technical/merkle-root)   
+   
 ![sendBlock](img/merkleRootHash.PNG)   
