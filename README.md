@@ -26,6 +26,14 @@ Node increments nonce until hash of block matches target.
 
     
 ![mining](img/mining.PNG)   
+   
+### Peer-to-peer   
+A peer-to-peer (P2P) network is a decentralized type of network in which each participant on the network can act as both a client and a server.   
+This means that each node on the network is able to communicate directly with other nodes and share resources (in this case blocks),   
+without the need for a central server or authority that controls the network or manages the flow of information.      
+Instead, each node on the network is equal and has the ability to communicate with other nodes and share resources. 
+This makes P2P networks highly resilient, as there is no single point of failure that can bring down the entire network.   
+   
 ![p2p](img/p2p.PNG)   
 ![sendBlock](img/sendingBlock.PNG)   
 ![sendBlock](img/merkleRootHash.PNG)   
