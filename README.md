@@ -48,10 +48,11 @@ First it checks if previous block hash of received block points on last block in
 graph RL
 B[Last block -2]
 B1[Last block -1]
-B2[Last block in chain]
+B2[Last block]
 RB[Received Block] -- prev. hash--> B2
 B2 -- prev. hash--> B1
 B1 -- prev. hash--> B
 ```
    
+If not, node asks peers about lenght of the chain (longest chain is valid because of amount of work that is needed to mine all blocks) and 
 ![sendBlock](img/merkleRootHash.PNG)   
