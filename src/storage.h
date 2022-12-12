@@ -41,7 +41,7 @@ public:
 		std::string merkleRoot = blockJson["merkleRoot"];
 		boost::multiprecision::uint256_t nonce{ blockJson["nonce"].get<std::string>() };
 		std::string hash = blockJson["hash"];
-		std::map<std::string, std::string> votes = blockJson["votes"];
+		std::unordered_map<std::string, std::string> votes = blockJson["votes"];
 		Block* block = new Block(id, timestamp, prevHash, merkleRoot, nonce, hash, votes);
 		blockJsonFile.close();
 
