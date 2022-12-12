@@ -5,5 +5,6 @@
 **boost** → [www.boost.org](https://www.boost.org/)   
 
 ![mempool](img/mempool.PNG)   
-
-![p2p network](img/p2p.PNG)   
+![mining](img/mining.PNG)   
+![p2p](img/p2p.PNG)   
+![sendBlock](img/sendingBlock.PNG)   
