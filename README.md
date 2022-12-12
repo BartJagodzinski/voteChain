@@ -11,6 +11,7 @@ Mempool is constantly listening for new votes until deadline is reached. Deadlin
     
 ### Mining
 Mining is about finding nonce. Node must encapsulate accumulated votes in block by hashing block header which includes:   
+    
 <**block header**>   
 - id
 - merkle root hash of all votes in block
@@ -18,7 +19,10 @@ Mining is about finding nonce. Node must encapsulate accumulated votes in block 
 - timestamp
 
 </**block header**>    
-But if we hash that header output will always be the same, that is why we need nonce. By adding nonce 
+    
+But if we hash that header output will always be the same, that is why we need nonce. Node increments nonce until hash of block matches target.   
+
+    
 ![mining](img/mining.PNG)   
 ![p2p](img/p2p.PNG)   
 ![sendBlock](img/sendingBlock.PNG)   
