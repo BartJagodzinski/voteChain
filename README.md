@@ -14,7 +14,7 @@ This makes P2P architecture highly resilient, as there is no single point of fai
 ![p2p](img/p2p.PNG)   
    
 ### Mempool
-Mempool is constantly listening for new votes until deadline is reached. Deadline is the end of voting time set before start.    
+Mempool is constantly listening for new votes (like ballot box) until deadline is reached. Deadline is the end of voting time set before start.    
 When reached, mempool closes for new votes and waits for the accumulated pool of votes to be closed in blocks.   
    
 ![mempool](img/mempool.PNG)   
@@ -40,5 +40,18 @@ Node increments nonce until hash of block matches target.
 After finding the correct nonce and mining the block, node must send it to its peers.   
    
 ![sendBlock](img/sendingBlock.PNG)   
+   
+If node has received a block, it must verify its authenticity. 
+First it checks if previous block hash of received block points on last block in its own chain.
+   
+```mermaid
+graph RL
+B[Last block -2]
+B1[Last block -1]
+B2[Last block in chain]
+RB[Received Block] -- prev. hash--> B2
+B2 -- prev. hash--> B1
+B1 -- prev. hash--> B
+```
    
 ![sendBlock](img/merkleRootHash.PNG)   
