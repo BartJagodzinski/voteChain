@@ -23,10 +23,10 @@ Mining is about finding nonce. Node must encapsulate accumulated votes in block 
 - merkle root hash of all votes in block
 - previous block hash
 - timestamp
+- nonce
 
 </**block header**>    
     
-But if we hash that header output will always be the same, that's why we need nonce.     
 Node increments nonce until hash of block matches target.     
 
     
