@@ -11,8 +11,8 @@
 #include "blockchain.h"
 #include "merkle.h"
 #include "mempool.h"
-#include "..\..\lib\sha256_lib\picosha2.h"
-#include "..\..\lib\json_lib\json.hpp"
+#include "picosha2.h"
+#include "json.hpp"
 #include <boost/multiprecision/cpp_int.hpp>
 
 class Storage {

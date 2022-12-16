@@ -9,7 +9,7 @@
 #include "block.h"
 #include "merkle.h"
 #include "storage.h"
-#include "..\..\lib\sha256_lib\picosha2.h"
+#include "picosha2.h"
 #include <boost/multiprecision/cpp_int.hpp>
 
 class Blockchain {

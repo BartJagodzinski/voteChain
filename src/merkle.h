@@ -6,7 +6,7 @@
 #include <tuple>
 #include <map>
 #include <memory>
-#include "..\..\lib\sha256_lib\picosha2.h"
+#include "picosha2.h"
 #include <boost/multiprecision/cpp_int.hpp>
 
 namespace merkle {
