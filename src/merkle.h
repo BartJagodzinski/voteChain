@@ -24,17 +24,28 @@ namespace merkle {
     std::string get_merkle_root_hash(T const& data) {
         if (data.size() == 0) return "empty";
         std::vector<std::string> hashes, merkleTree;
+        std::string oddHash;
+        bool odd = false;
 
-        // make vec of hashes from <string sender, string receiver> data
+        // Make vec of hashes from <string sender, string receiver> data
         for (auto& [key, value] : data)
             hashes.push_back(picosha2::double_hash256_hex_string(key + value));
 
+        // If number of hashes is odd, store last hash into variable to vec of hashes make it even
+        if (hashes.size() % 2 != 0) {
+            odd = true;
+            oddHash = hashes.at(hashes.size() - 1);
+            hashes.pop_back();
+        }
+
+        // Hash until root of even vector<hash>
         do {
-            // if number of hashes is odd, copy last hash as its neighbour
-            if (hashes.size() % 2 != 0) hashes.push_back(hashes.at(hashes.size() - 1));
             merkleTree = hash_until_root(hashes);
             hashes = merkleTree;
         } while (merkleTree.size() > 1);
+
+        // If number of hashes was odd, hash received root of even vec<hash> with stored last odd hash 
+        if (odd) { return picosha2::double_hash256_hex_string(merkleTree.at(0) + oddHash); }
 
         return merkleTree.at(0);
     }
