@@ -41,12 +41,10 @@ First it checks if "previous block hash" of received block header points on last
 
 ```mermaid
 graph RL
-B[Last block -2]
 B1[Last block -1]
 B2[Last block]
 RB[Received Block] -- prev. hash--> B2
 B2 -- prev. hash--> B1
-B1 -- prev. hash--> B
 ```
    
 If not, node asks peers about lenght of the chain (longest chain is valid because of amount of work that is needed to mine all blocks) and if owned chain is shorter than longest it asks peers for sending missing block(s). But if lenght of owned chain is the longest and received block points on non-existing block it is rejected by the node.   
@@ -64,9 +62,11 @@ If block hash is not correct block is rejected, otherwise is added to chain. Nod
    
 ![voteChange](img/changeOfVote.PNG)  
     
+    
 Any change in votes included in block completely changes merkle root hash, which changes block header.   
     
     
 ![fraud](img/fraud.PNG)   
+    
     
 Block hash changes completely, meaning that the next block's "previous hash" pointer is invalid and needs to be changed. This causes the headers of all subsequent blocks to change and have to be mined again.
