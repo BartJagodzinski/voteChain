@@ -62,6 +62,11 @@ If block hash is not correct block is rejected, otherwise is added to chain. Nod
 
 ### Fraud protection    
    
-![voteChange](img/changeOfVote.PNG)   
+![voteChange](img/changeOfVote.PNG)  
+    
+Any change in votes included in block completely changes merkle root hash, which changes block header.   
+    
     
 ![fraud](img/fraud.PNG)   
+    
+Block hash changes completely, meaning that the next block's "previous hash" pointer is invalid and needs to be changed. This causes the headers of all subsequent blocks to change and have to be mined again.
