@@ -59,3 +59,9 @@ However, if previous block hash points on last block in chain owned by node, it 
    
 If merkle root hash is not correct block is rejected, otherwise node verify block hash by hashing whole header.    
 If block hash is not correct block is rejected, otherwise is added to chain. Node must erase votes of added block from mempool.   
+
+### Fraud protection    
+   
+![voteChange](img/changeOfVote.PNG)   
+    
+![fraud](img/fraud.PNG)   
