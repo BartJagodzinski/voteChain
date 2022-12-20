@@ -27,7 +27,7 @@ Mining is about finding nonce. Node must encapsulate accumulated votes in block 
 
 </**block header**>    
     
-Node increments nonce until hash of block matches target.     
+Node increments nonce until block hash matches target.     
 
     
 ![mining](img/mining.PNG)   
