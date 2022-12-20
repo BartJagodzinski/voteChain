@@ -33,8 +33,8 @@ private:
           if (!ec) {
             std::string message = _read_msg.body();
             if(message.size() > 128) {
-              _data.insert({message.substr(0, 64), message.substr(65, 128)});
-              for(auto el : _data) std::cout << el.first <<": " << el.second << std::endl;
+              _data.insert({message.substr(0, 34), message.substr(35, 68)});
+              for(auto el : _data) std::cout << el.first <<":" << el.second << std::endl;
             }
             _readHeader();
           }
