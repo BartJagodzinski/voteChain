@@ -10,8 +10,7 @@ A peer-to-peer (P2P) network is a decentralized type of network in which each pa
 ![p2p](img/p2p.PNG)   
    
 ### Mempool
-Mempool is constantly listening for new votes (like ballot box) until deadline is reached. Deadline is the end of voting time set before start.    
-When reached, mempool closes for new votes and waits for the accumulated pool of votes to be closed in blocks.   
+Mempool is constantly listening for new votes (like ballot box) until deadline is reached. Deadline is the end of voting time set before start. When reached, mempool closes for new votes and waits for the accumulated pool of votes to be closed in blocks.   
    
 ![mempool](img/mempool.PNG)   
     
