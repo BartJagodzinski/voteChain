@@ -10,7 +10,7 @@ static secp256k1_context *ctx = NULL;
 
 namespace keys {
 
-    void print_hex(unsigned char* data, size_t size) {
+    void printHex(unsigned char* data, size_t size) {
         for(size_t i = 0; i < size; i++)
             printf("%02x", data[i]);
         std::cout << std::endl;
