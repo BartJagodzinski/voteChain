@@ -47,10 +47,10 @@ public:
 	void hash() {
 		_merkleRoot = merkle::get_merkle_root_hash(_data);
 		std::string toHash = std::to_string(_blockchain.size()) + "," + std::to_string(_timestamp) + "," + _merkleRoot + "," + _blockchain.back()->getHash();
-		validate_nonce(picosha2::hash256_hex_string(toHash));
+		findNonce(picosha2::hash256_hex_string(toHash));
 	}
 
-	void validate_nonce(std::string const &toHash) {
+	void findNonce(std::string const &toHash) {
 		boost::multiprecision::uint256_t nonce = 0;
 		std::string hash;
 		while (true) {
