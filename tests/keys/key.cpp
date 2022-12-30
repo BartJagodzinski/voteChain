@@ -10,7 +10,7 @@ int main() {
     // If uncompressed key is needed keys::publicKeyFromSecKey(pubKey, secKey, false)
     if(keys::publicKeyFromSecKey(pubKey, secKey)) std::cout << "Success" << std::endl;
 
-    std::cout << "Secret Key: "; keys::print_hex(secKey.data(), secKey.size());
-    std::cout << "Public Key: "; keys::print_hex(pubKey.data(), pubKey.size());
+    std::cout << "Secret Key: "; keys::printHex(secKey.data(), secKey.size());
+    std::cout << "Public Key: "; keys::printHex(pubKey.data(), pubKey.size());
     return EXIT_SUCCESS;
 }
