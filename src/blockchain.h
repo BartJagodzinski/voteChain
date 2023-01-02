@@ -34,7 +34,7 @@ public:
 		_merkleRoot = merkle::get_merkle_root_hash(_data);
 		_timestamp = std::time(nullptr);
 		std::string toHash = std::to_string(id) + "," + std::to_string(_timestamp) + "," + _merkleRoot + "," + blockZeroPrevHash;
-		validate_nonce(picosha2::hash256_hex_string(toHash));
+		findNonce(picosha2::hash256_hex_string(toHash));
 		_blockchain.push_back(new Block(id, _timestamp, blockZeroPrevHash, _merkleRoot, _nonce, _hash, _data));
 	}
 
