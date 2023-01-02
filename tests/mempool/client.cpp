@@ -9,7 +9,7 @@
 #include <fstream>
 #include <string>
 #include <boost/asio.hpp>
-#include "chat_message.hpp"
+#include "message.hpp"
 
 using boost::asio::ip::tcp;
 
@@ -17,13 +17,13 @@ class chat_client {
 private:
   boost::asio::io_context& _io_context;
   tcp::socket _socket;
-  chat_message _read_msg;
-  std::deque<chat_message> _write_msgs;
+  Message _read_msg;
+  std::deque<Message> _write_msgs;
 
   void do_connect(const tcp::resolver::results_type& endpoints) { boost::asio::async_connect(_socket, endpoints, [this](boost::system::error_code ec, tcp::endpoint) { if (!ec) do_read_header(); }); }
 
   void do_read_header() {
-    boost::asio::async_read(_socket, boost::asio::buffer(_read_msg.data(), chat_message::header_length),
+    boost::asio::async_read(_socket, boost::asio::buffer(_read_msg.data(), Message::header_length),
         [this](boost::system::error_code ec, std::size_t /*length*/) {
           if (!ec && _read_msg.decode_header()) do_read_body();
           else _socket.close();
@@ -55,7 +55,7 @@ private:
 public:
   chat_client(boost::asio::io_context& io_context, const tcp::resolver::results_type& endpoints) : _io_context(io_context), _socket(io_context) { do_connect(endpoints); }
 
-  void write(const chat_message& msg) {
+  void write(const Message& msg) {
     boost::asio::post(_io_context,
         [this, msg]() {
           bool write_in_progress = !_write_msgs.empty();
@@ -80,11 +80,11 @@ int main(int argc, char* argv[]) {
     char line[2];
     char sender[] = "15e15hWo6CShMgbAfo8c2Ykj4C6BLq6No";
     char receiver[] = ":1JaR2gwbg2vFvgHvshaL61HmCitaCGaBgQ";
-    while (std::cin.getline(line, chat_message::max_body_length + 1))
+    while (std::cin.getline(line, Message::max_body_length + 1))
     {
       std::strcat(sender, line);
       std::cout << sender << std::endl;
-      chat_message msg;
+      Message msg;
       char vote[65]="";
       std::strcat(vote, sender);
       std::strcat(vote, receiver);
