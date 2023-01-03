@@ -13,7 +13,7 @@ namespace merkle {
 
     std::vector<std::string> hash_until_root(std::vector<std::string> const &hashes) {
         std::vector<std::string> merkleTree;
-        
+
         for (size_t pos = 0; pos + 1 < hashes.size(); pos += 2)
             merkleTree.push_back(picosha2::double_hash256_hex_string(hashes.at(pos) + hashes.at(pos + 1)));
 
