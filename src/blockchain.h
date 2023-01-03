@@ -20,34 +20,36 @@ private:
 	std::time_t _timestamp;
 	boost::multiprecision::uint256_t _nonce;
 	std::string _hash;
-	std::time_t _deadline;
-	unsigned int _difficulty = 2;
+	std::string _prevHash;
+	unsigned int _lenght = 0;
+	unsigned int _difficulty = 4;
 	const std::string _target = "0000000000000000000000000000000000000000000000000000000000000000";
-	unsigned int _slidingWindowSize = 5;
-	Storage _storage = Storage();
+	Storage _storage = Storage(_lenght);
 public:
-	Blockchain(std::string blockZeroPrevHash, std::time_t deadline) {
+	Blockchain(std::string blockZeroPrevHash) {
 		std::cout << "Blockchain C'tor" << std::endl;
-		_deadline = deadline;
-		_blockchain.reserve(_blockchain.size() + 1);	
-		unsigned int id = 0;
+		_blockchain.reserve(_blockchain.size() + 1);
 		_merkleRoot = merkle::get_merkle_root_hash(_data);
 		_timestamp = std::time(nullptr);
-		std::string toHash = std::to_string(id) + "," + std::to_string(_timestamp) + "," + _merkleRoot + "," + blockZeroPrevHash;
-		findNonce(picosha2::hash256_hex_string(toHash));
-		_blockchain.push_back(new Block(id, _timestamp, blockZeroPrevHash, _merkleRoot, _nonce, _hash, _data));
+		_prevHash = blockZeroPrevHash;
+		findNonce(picosha2::hash256_hex_string(std::to_string(_lenght) + std::to_string(_timestamp) + _merkleRoot + _prevHash));
+		_blockchain.push_back(new Block(_lenght, _timestamp, _prevHash, _merkleRoot, _nonce, _hash, _data));
+		_storage.createSingleBlockJson(_blockchain.at(0));
+		printLastBlock();
+		_blockchain.at(0)->~Block();
+		_blockchain.clear();
 	}
 
-	std::time_t getDeadline() const { return _deadline; }
 	Storage* getStorage() { return &_storage; }
+	std::unordered_map<std::string,std::string> &getData() { return _data; }
 
 	void setDifficulty(unsigned int newDifficulty) { _difficulty = newDifficulty; }
-	void setSlidingWindowSize(unsigned int newSize) { if(newSize > 0) _slidingWindowSize = newSize; }
+
+	bool countVotes(std::unordered_map<std::string, unsigned int> &results) { return (_storage.countVotes(results)) ? true : false; }
 
 	void hash() {
 		_merkleRoot = merkle::get_merkle_root_hash(_data);
-		std::string toHash = std::to_string(_blockchain.size()) + "," + std::to_string(_timestamp) + "," + _merkleRoot + "," + _blockchain.back()->getHash();
-		findNonce(picosha2::hash256_hex_string(toHash));
+		findNonce(picosha2::hash256_hex_string(std::to_string(_lenght) + std::to_string(_timestamp) + _merkleRoot + _prevHash));
 	}
 
 	void findNonce(std::string const &toHash) {
@@ -57,7 +59,7 @@ public:
 			hash = toHash + nonce.str();
 			hash = picosha2::hash256_hex_string(hash);
 			if (hash.substr(0, _difficulty) == _target.substr(0, _difficulty)) break;
-			nonce++;
+			++nonce;
 		}
 		_nonce = nonce;
 		_hash = hash;
@@ -65,35 +67,28 @@ public:
 
 	void addTx(std::string sender, std::string receiver) { _data.insert({sender, receiver}); }
 
-	void slidingWindow() {
-		if (_blockchain.size() > _slidingWindowSize) {
-			_storage.appendBlock(_blockchain.at(0), ',');
-			_storage.createSingleBlockJson(_blockchain.at(0));
-			_blockchain.at(0)->~Block();
-			_blockchain.erase(_blockchain.begin());
-		}
-	}
-
-	void addBlock() {		
+	void addBlock() {
+		_lenght++;
 		_blockchain.reserve(_blockchain.size() + 1);
 		_timestamp = std::time(nullptr);
 		hash();
-		_blockchain.push_back(new Block(_blockchain.back()->getId() + 1, _timestamp, _blockchain.back()->getHash(), _merkleRoot, _nonce, _hash, _data));
+		_blockchain.push_back(new Block(_lenght, _timestamp, _prevHash, _merkleRoot, _nonce, _hash, _data));
+		_storage.createSingleBlockJson(_blockchain.at(0));
+		printLastBlock();
+		_prevHash = _hash;
 		_data.clear();
-		slidingWindow();
+		_blockchain.at(0)->~Block();
+		_blockchain.clear();
 	}
 
-	void printBlockchain() { _storage.printBlockchain(); }
 	void printLastBlock() { std::cout << "\n########################\n" << std::endl; _blockchain.back()->printBlock(); }
-		
+
 	void addRemainingTxs() {
 		while (_blockchain.size() > 0) {
-			_storage.appendBlock(_blockchain.at(0), ',');
 			_storage.createSingleBlockJson(_blockchain.at(0));
 			_blockchain.at(0)->~Block();
 			_blockchain.erase(_blockchain.begin());
 		}
-		_storage.close();
 	}
 
 	void wipe() { for (auto el : _blockchain) el->~Block();	}
