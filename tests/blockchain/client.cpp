@@ -9,7 +9,7 @@
 #include <fstream>
 #include <string>
 #include <boost/asio.hpp>
-#include "chat_message.hpp"
+#include "message.hpp"
 
 using boost::asio::ip::tcp;
 
