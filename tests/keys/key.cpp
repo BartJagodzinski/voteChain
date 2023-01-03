@@ -8,9 +8,9 @@ int main() {
     keys::privateKeyFromHash(secKey, keys::hashesFromData("mail", "pass", "name", "surname", 99999));
 
     // If uncompressed key is needed keys::publicKeyFromSecKey(pubKey, secKey, false)
-    if(keys::publicKeyFromSecKey(pubKey, secKey)) std::cout << "Success" << std::endl;
-
-    std::cout << "Secret Key: "; keys::printHex(secKey.data(), secKey.size());
-    std::cout << "Public Key: "; keys::printHex(pubKey.data(), pubKey.size());
+    if(keys::publicKeyFromSecKey(pubKey, secKey)) {
+        std::cout << "Secret Key: "; keys::printHex(secKey.data(), secKey.size());
+        std::cout << "Public Key: "; keys::printHex(pubKey.data(), pubKey.size());
+    }
     return EXIT_SUCCESS;
 }
