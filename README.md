@@ -2,8 +2,8 @@
 
 **sha256** → [https://github.com/okdshin/PicoSHA2](https://github.com/okdshin/PicoSHA2)   
 **json** → [https://github.com/nlohmann/json](https://github.com/nlohmann/json)   
-**boost** → [www.boost.org](https://www.boost.org/)
-**secp256k1** → [secp256k1](https://github.com/bitcoin-core/secp256k1)
+**boost** → [www.boost.org](https://www.boost.org/)     
+**secp256k1** → [secp256k1](https://github.com/bitcoin-core/secp256k1)     
 
 ### Peer-to-peer   
 A peer-to-peer (P2P) network is a decentralized type of network in which each participant can act as both a client and a server. This means that each node is able to communicate directly with other nodes and share resources (in this case blocks), without the need for a central server or authority that controls the network or manages the flow of information. Instead, each node is equal and has the same rights (just like voting). This makes P2P architecture highly resilient, as there is no single point of failure that can bring down the entire network.   
