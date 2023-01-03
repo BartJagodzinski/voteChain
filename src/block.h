@@ -37,7 +37,7 @@ public:
 		std::cout << "nonce      : " << _nonce << std::endl;
 		std::cout << "hash:      : " << _hash << std::endl;
 	}
-	
+
 	~Block() { std::cout << "Block D'tor" << std::endl; }
 };
 
