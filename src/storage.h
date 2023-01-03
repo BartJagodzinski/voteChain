@@ -3,10 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <vector>
-#include <tuple>
-#include <ctime>
-#include <chrono>
 #include "block.h"
 #include "blockchain.h"
 #include "merkle.h"
@@ -17,20 +13,44 @@
 
 class Storage {
 private:
-
+	unsigned int &_lenght;
 public:
-	Storage() { 
-		std::ofstream blockchainJson("blockchainJson.json", std::ios::app);
-		std::ofstream headerOnlyBlockchainJson("headerOnlyBlockchainJson.json", std::ios::app);
-		blockchainJson << "[" << std::endl;
-		headerOnlyBlockchainJson << "[" << std::endl;
-		blockchainJson.close();
-		headerOnlyBlockchainJson.close();
-		std::cout << "Storage C'tor" << std::endl; 
-	};
+	Storage(unsigned int &lenght) : _lenght(lenght) { std::cout << "Storage C'tor" << std::endl; };
+
+	// return 0 if not voted, 1 if voted and -1 if error occurs.
+	int checkIfAddressVoted(std::string address) {
+		for(size_t id = 1; id <= _lenght; ++id) {
+			std::ifstream blockJsonFile("block_" + std::to_string(id) + ".json");
+			if (!blockJsonFile)	return -1;
+			nlohmann::json blockJson;
+			blockJsonFile >> blockJson;
+			std::unordered_map<std::string, std::string> votes = blockJson["votes"];
+			blockJsonFile.close();
+			if (votes.find(address) != votes.end()) return 1;
+		}
+		return 0;
+	}
+
+	bool countVotes(std::unordered_map<std::string, unsigned int> &results) {
+		for(size_t id = 1; id <= _lenght; ++id) {
+			std::ifstream blockJsonFile("block_" + std::to_string(id) + ".json");
+			if (!blockJsonFile)	return false;
+			nlohmann::json blockJson;
+			blockJsonFile >> blockJson;
+			std::unordered_map<std::string, std::string> votes = blockJson["votes"];
+			blockJsonFile.close();
+
+			for(auto const &vote : votes) {
+				auto it = results.find(vote.second);
+				if (it == results.end()) results.insert({vote.second, 1});
+				if (it != results.end()) it->second += 1;
+			}
+		}
+		return true;
+	}
 
 	Block* readBlockFromJson(unsigned int id) {
-		std::string fileName = "block_" + std::to_string(id) + "_Json" + ".json";
+		std::string fileName = "block_" + std::to_string(id) + ".json";
 		std::ifstream blockJsonFile(fileName);
 		if (!blockJsonFile)	return nullptr;
 
@@ -49,9 +69,9 @@ public:
 	}
 
 	void createSingleBlockJson(Block* block) {
-		std::string fileName = "block_" + std::to_string(block->getId()) + "_Json" + ".json";
+		std::string fileName = "block_" + std::to_string(block->getId()) + ".json";
 		std::ofstream blockchainJson(fileName, std::ios::app);
-				
+
 		nlohmann::json blockJson = {
 			{"id", block->getId()},
 			{"timestamp", block->getTimestamp()},
@@ -60,54 +80,10 @@ public:
 			{"nonce", block->getNonce().str()},
 			{"hash", block->getHash()},
 			{"votes", block->getData()}
-		};	
+		};
 
 		blockchainJson << std::setw(2) << blockJson << std::endl;
 		blockchainJson.close();
-	}
-
-	void appendBlock(Block *block, char c) {
-		std::ofstream blockchainJson("blockchainJson.json", std::ios::app);
-		std::ofstream headerOnlyBlockchainJson("headerOnlyBlockchainJson.json", std::ios::app);
-
-		nlohmann::json blockJson = {
-			{"id", block->getId()},
-			{"timestamp", block->getTimestamp()},
-			{"prevHash", block->getPrevHash()},
-			{"merkleRoot", block->getMerkleRoot()},
-			{"nonce", block->getNonce().str()},
-			{"hash", block->getHash()}
-		};
-		
-		headerOnlyBlockchainJson << std::setw(2) << blockJson << c << std::endl;
-		headerOnlyBlockchainJson.close();
-
-		blockJson["votes"] = block->getData();
-		blockchainJson << std::setw(2) << blockJson << c << std::endl;
-		blockchainJson.close();
-	}
-
-	void printBlockchain() {
-		std::ifstream blockchainJson("blockchainJson.json");
-		if (!blockchainJson) std::cout << "Blockchain is empty." << std::endl;
-		
-		nlohmann::json blockchain;
-		blockchainJson >> blockchain;
-
-		for (auto& [key, value] : blockchain.items())
-			std::cout << key << " : " << value << "\n";
-
-		blockchainJson.close();
-	}
-
-	void close() {
-		std::ofstream blockchainJson("blockchainJson.json", std::ios::app);
-		std::ofstream headerOnlyBlockchainJson("headerOnlyBlockchainJson.json", std::ios::app);
-		nlohmann::json endOfBlockchain = { {"id", "end"} };
-		blockchainJson << std::setw(2) << endOfBlockchain << "]" << std::endl;
-		headerOnlyBlockchainJson << std::setw(2) << endOfBlockchain << "]" << std::endl;
-		blockchainJson.close();
-		headerOnlyBlockchainJson.close();
 	}
 
 	~Storage() { std::cout << "Storage D'tor" << std::endl; };
