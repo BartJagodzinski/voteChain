@@ -8,7 +8,7 @@
 #include "session.h"
 #include "unordered_set_hash.h"
 #include "message.hpp"
-#define SIZE 1024
+#include "json.hpp"
 
 class Node {
 private:
@@ -30,26 +30,6 @@ private:
       });
   }
 
-  void _readHeader() {
-    boost::asio::async_read(_socket, boost::asio::buffer(_read_msg.data(), Message::header_length),
-        [this](boost::system::error_code ec, std::size_t /*length*/) {
-          if (!ec && _read_msg.decode_header()) _readBody();
-          else _socket.close();
-        });
-  }
-
-  void _readBody() {
-    boost::asio::async_read(_socket, boost::asio::buffer(_read_msg.body(), _read_msg.body_length()),
-        [this](boost::system::error_code ec, std::size_t /*length*/) {
-          if (!ec) {
-            std::cout.write(_read_msg.body(), _read_msg.body_length());
-            std::cout << "\n";
-            _readHeader();
-          }
-          else _socket.close();
-        });
-  }
-
   void _write() {
     boost::asio::async_write(_socket, boost::asio::buffer(_write_msgs.front().data(), _write_msgs.front().length()),
         [this](boost::system::error_code ec, std::size_t /*length*/) {
@@ -57,7 +37,8 @@ private:
             _write_msgs.pop_front();
             if (!_write_msgs.empty()) _write();
           }
-          else _socket.close();
+          //else _socket.close();   
+          _socket.close();
         });
   }
 public:
@@ -65,7 +46,7 @@ public:
 
   void do_connect(const boost::asio::ip::tcp::resolver::results_type& endpoints) {
     boost::asio::async_connect(_socket, endpoints,
-      [this](boost::system::error_code ec, boost::asio::ip::tcp::endpoint) { if (!ec) _readHeader(); }); }
+      [this](boost::system::error_code ec, boost::asio::ip::tcp::endpoint) { /*if (!ec) _readHeader();*/ }); }
 
   void write(const Message& msg) {
     boost::asio::post(_io_context,
