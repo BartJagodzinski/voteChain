@@ -2,9 +2,13 @@
 #define SESSION_H
 #include <boost/asio.hpp>
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <deque>
+#include <regex>
 #include "peer.h"
 #include "message.hpp"
+#include "json.hpp"
 
 class Session : public Peer, public std::enable_shared_from_this<Session> {
 private:
@@ -26,10 +30,24 @@ private:
       boost::asio::async_read(_socket, boost::asio::buffer(_read_msg.body(), _read_msg.body_length()),
         [this, self](boost::system::error_code ec, std::size_t /*length*/) {
           if (!ec) {
-            std::cout << _read_msg.body() << std::endl;
-            _readHeader();
+            _saveBlockToVerify(_read_msg.body());
+            _read_msg.clear();
+            //_readHeader();
           }
         });
+  }
+
+  void _saveBlockToVerify(std::string msg) {
+    std::string block;
+    std::regex regexp("\\{(.*\\n){1,10}.*?votes(.*\\n){1,150}.*?\\}");
+    std::smatch match;
+    std::regex_search(msg, match, regexp);
+    block = match.str();
+    if(!block.empty()) {
+      std::ofstream blockFile("block_to_verify.json");
+      blockFile << block << std::endl;
+      blockFile.close();
+    }
   }
 
   void _write() {
