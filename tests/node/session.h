@@ -38,11 +38,10 @@ private:
   }
 
   void _saveBlockToVerify(std::string msg) {
-    std::string block;
-    std::regex regexp("\\{(.*\\n){1,10}.*?votes(.*\\n){1,150}.*?\\}");
+    std::regex regexp("\\{(.*\\n){1,10}.*?votes(.*\\n){1,150}\\}");
     std::smatch match;
     std::regex_search(msg, match, regexp);
-    block = match.str();
+    std::string block = match.str();
     if(!block.empty()) {
       std::ofstream blockFile("block_to_verify.json");
       blockFile << block << std::endl;
