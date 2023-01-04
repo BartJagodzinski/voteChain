@@ -37,14 +37,13 @@ private:
             _write_msgs.pop_front();
             if (!_write_msgs.empty()) _write();
           }
-          //else _socket.close();   
           _socket.close();
         });
   }
 public:
   Node(boost::asio::io_context& io_context, const boost::asio::ip::tcp::endpoint& endpoint) : _io_context(io_context), _acceptor(io_context, endpoint), _socket(io_context) { _accept(); std::cout << "Node C'tor" << std::endl; }
 
-  void do_connect(const boost::asio::ip::tcp::resolver::results_type& endpoints) {
+  void connect(const boost::asio::ip::tcp::resolver::results_type& endpoints) {
     boost::asio::async_connect(_socket, endpoints,
       [this](boost::system::error_code ec, boost::asio::ip::tcp::endpoint) { /*if (!ec) _readHeader();*/ }); }
 
@@ -77,7 +76,7 @@ int main(int argc, char* argv[]) {
     // Client part of node
     if(argc > 3) {
       auto connectEndpoint = resolver.resolve(argv[2], argv[3]);
-      node.do_connect(connectEndpoint);
+      node.connect(connectEndpoint);
     }
 
     std::thread t([&io_context](){ io_context.run(); });
