@@ -1,4 +1,4 @@
-Test of dividing block of 10k votes into smaller chunks to send via TCP
+Test of dividing block with 10.000 votes into smaller chunks to send via TCP
 
 g++ main.cpp -o main -lboost_system -lboost_thread -pthread -std=c++17
 
