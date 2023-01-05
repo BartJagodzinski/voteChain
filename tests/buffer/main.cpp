@@ -3,6 +3,7 @@
 #include <fstream>
 #include <deque>
 #include <chrono>
+#include "message.hpp"
 
 int main() {
     auto start = std::chrono::high_resolution_clock::now();
