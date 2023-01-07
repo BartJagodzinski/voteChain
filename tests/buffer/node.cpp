@@ -37,7 +37,6 @@ private:
             _write_msgs.pop_front();
             if (!_write_msgs.empty()) _write();
           }
-          //_socket.close();
         });
   }
 public:
@@ -93,7 +92,7 @@ int main(int argc, char* argv[]) {
       Message msg;
       file.read(buff, size);
       file.close();
-      msg.body_length(size);
+      msg.body_length(Message::max_body_length);
       std::deque<char> deq(buff, buff + sizeof(buff)/sizeof(*buff));
       memset(buff, 0, sizeof(buff));
 
