@@ -18,7 +18,7 @@ int main() {
 
     // If uncompressed key is needed keys::publicKeyFromSecKey(pubKey, secKey, false)
     if(!keys::publicKeyFromSecKey(pubKey, secKey)) return EXIT_FAILURE;
-
+    std::cout << std::endl;
     std::cout << "Secret Key: " << convert::uint8_to_hex_string(secKey.data(), secKey.size()) << std::endl;
     std::cout << "Public Key: " << convert::uint8_to_hex_string(pubKey.data(), pubKey.size()) << std::endl;
 
@@ -51,9 +51,10 @@ int main() {
     // Append first 8 char of 'h' to ripemd160 hash
     for(size_t i = 0; i < 4; ++i)
        ripemd160Hash.push_back(ripemd160DoubleSha256[i]);
-
+    std::cout << "RIPEMD160 with version byte and checksum: " << convert::uint8_to_hex_string(ripemd160Hash.data(), ripemd160Hash.size()) << std::endl;
     // Base58() to get address
     std::string address = base58::encode(ripemd160Hash, base58::map);
     std::cout << "Base58 address: " << address << std::endl;
+    std::cout << std::endl;
     return EXIT_SUCCESS;
 }
