@@ -14,7 +14,7 @@ int main() {
     std::vector<uint8_t> pubKey(keys::pub_key_compressed_size);
     std::vector<uint8_t> secKey(picosha2::k_digest_size);
 
-    keys::privateKeyFromHash(secKey, keys::hashesFromData("mail", "pass", "name", "surname", 99999));
+    keys::privateKeyFromHash(secKey, keys::hashFromData("mail", "pass", "name", "surname", 99999));
 
     // If uncompressed key is needed keys::publicKeyFromSecKey(pubKey, secKey, false)
     if(!keys::publicKeyFromSecKey(pubKey, secKey)) return EXIT_FAILURE;
