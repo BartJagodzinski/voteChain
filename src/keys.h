@@ -1,22 +1,17 @@
-#ifndef KEYS
-#define KEYS
+#ifndef KEYS_H
+#define KEYS_H
 #include <iostream>
 #include <secp256k1.h>
-#include <stdio.h>
 #include <string.h>
 #include "picosha2.h"
 #include <iomanip>
 static secp256k1_context *ctx = NULL;
 
 namespace keys {
+    static const size_t pub_key_compressed_size = 33;
+    static const size_t pub_key_uncompressed_size = 65;
 
-    void printHex(unsigned char* data, size_t size) {
-        for(size_t i = 0; i < size; i++)
-            printf("%02x", data[i]);
-        std::cout << std::endl;
-    }
-
-    bool publicKeyFromSecKey(std::vector<unsigned char> &pubKeyVec, std::vector<unsigned char> &secKey, bool compressed=true) {
+    bool publicKeyFromSecKey(std::vector<uint8_t> &pubKeyVec, std::vector<uint8_t> &secKey, bool compressed=true) {
         ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
         if(secp256k1_ec_seckey_verify(ctx, secKey.data())) {
             secp256k1_pubkey pubkey;
@@ -39,8 +34,8 @@ namespace keys {
         return picosha2::hash256_hex_string(mail)+picosha2::hash256_hex_string(password)+picosha2::hash256_hex_string(name)+picosha2::hash256_hex_string(surname)+picosha2::hash256_hex_string(std::to_string(identificationNumber));
     }
 
-    // std::vector<unsigned char> secKey(picosha2::k_digest_size);
-    void privateKeyFromHash(std::vector<unsigned char> &secKey, std::string hash) { picosha2::hash256(hash, secKey); }
+    // std::vector<uint8_t> secKey(picosha2::k_digest_size);
+    void privateKeyFromHash(std::vector<uint8_t> &secKey, std::string hash) { picosha2::hash256(hash, secKey); }
 }
 
 #endif
