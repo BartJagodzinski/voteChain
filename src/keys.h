@@ -15,7 +15,7 @@ namespace keys {
         ctx = secp256k1_context_create(SECP256K1_CONTEXT_SIGN | SECP256K1_CONTEXT_VERIFY);
         if(secp256k1_ec_seckey_verify(ctx, secKey.data())) {
             secp256k1_pubkey pubkey;
-            size_t len = (compressed) ? 33 : 65;
+            size_t len = (compressed) ? pub_key_compressed_size : pub_key_uncompressed_size;
             if(secp256k1_ec_pubkey_create(ctx, &pubkey, secKey.data())) {
                 if(compressed) secp256k1_ec_pubkey_serialize(ctx, pubKeyVec.data(), &len, &pubkey, SECP256K1_EC_COMPRESSED);
                 else secp256k1_ec_pubkey_serialize(ctx, pubKeyVec.data(), &len, &pubkey, SECP256K1_EC_UNCOMPRESSED);
