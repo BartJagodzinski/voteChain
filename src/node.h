@@ -7,50 +7,36 @@
 #include <string>
 #include <deque>
 #include <fstream>
-#include <unordered_set>
+#include <vector>
+#include <unordered_map>
 #include <boost/asio.hpp>
 #include "node_session.h"
 #include "unordered_set_hash.h"
 #include "message.hpp"
+#include "picosha2.h"
+#include "node_config.h"
 
 class Node {
 private:
   boost::asio::io_context& _io_context;
   boost::asio::ip::tcp::acceptor _acceptor;
   boost::asio::ip::tcp::socket _socket;
-  std::unordered_set<std::pair<std::string, unsigned short>, UnorderedSetHash<std::string, unsigned short>> _peers;
+  boost::asio::ip::tcp::resolver _resolver;
+	NodeRoom _room;
+  std::pair<std::string, unsigned short> _ipPort;
+  std::unordered_map<std::string, std::pair<std::string, unsigned short>> _peers;
   std::deque<Message> _write_msgs;
   Message _read_msg;
+  std::vector<char> _buff;
 
   void _accept() {
     _acceptor.async_accept(
       [this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
         if (!ec) {
-          _peers.insert({socket.remote_endpoint().address().to_string(), socket.remote_endpoint().port()});
-          std::make_shared<NodeSession>(std::move(socket))->start();
+          std::make_shared<NodeSession>(std::move(socket), _room)->start();
         }
         _accept();
       });
-  }
-
-  void _readHeader() {
-    boost::asio::async_read(_socket, boost::asio::buffer(_read_msg.data(), Message::header_length),
-        [this](boost::system::error_code ec, std::size_t /*length*/) {
-          if (!ec && _read_msg.decode_header()) _readBody();
-          else _socket.close();
-        });
-  }
-
-  void _readBody() {
-    boost::asio::async_read(_socket, boost::asio::buffer(_read_msg.body(), _read_msg.body_length()),
-        [this](boost::system::error_code ec, std::size_t /*length*/) {
-          if (!ec) {
-            std::cout.write(_read_msg.body(), _read_msg.body_length());
-            std::cout << "\n";
-            _readHeader();
-          }
-          else _socket.close();
-        });
   }
 
   void _write() {
@@ -60,15 +46,22 @@ private:
             _write_msgs.pop_front();
             if (!_write_msgs.empty()) _write();
           }
-          else _socket.close();
         });
   }
-public:
-  Node(boost::asio::io_context& io_context, const boost::asio::ip::tcp::endpoint& endpoint) : _io_context(io_context), _acceptor(io_context, endpoint), _socket(io_context) { _accept(); std::cout << "Node C'tor" << std::endl; }
 
-  void do_connect(const boost::asio::ip::tcp::resolver::results_type& endpoints) {
+public:
+  Node(boost::asio::io_context& io_context, const boost::asio::ip::tcp::endpoint& endpoint)
+  : _io_context(io_context), _acceptor(io_context, endpoint), _socket(io_context), _resolver(io_context)
+  {
+    _ipPort = config::getThisNodeIpPort();
+    if(!config::getAllNodesFromJson(_peers)) { std::cerr << "Error in reading nodes from json" << std::endl; exit;}
+    _accept(); std::cout << "Node C'tor" << std::endl;
+  }
+
+  void connect(const boost::asio::ip::tcp::resolver::results_type& endpoints) {
     boost::asio::async_connect(_socket, endpoints,
-      [this](boost::system::error_code ec, boost::asio::ip::tcp::endpoint) { if (!ec) _readHeader(); }); }
+      [this](boost::system::error_code ec, boost::asio::ip::tcp::endpoint) { /*if (!ec) _readHeader();*/ });
+  }
 
   void write(const Message& msg) {
     boost::asio::post(_io_context,
@@ -77,6 +70,58 @@ public:
         _write_msgs.push_back(msg);
         if (!write_in_progress) _write();
       });
+  }
+
+  void loadBlockFileToBuffer(unsigned int id) {
+    std::ifstream file("block_"+std::to_string(id)+".json", std::ios::in | std::ios::binary);
+    // Get file size
+    file.seekg(0, std::ios::end);
+    size_t size = file.tellg();
+    file.seekg(0, std::ios::beg);
+    // Buffer to store whole file
+    _buff.reserve(size);
+    _buff.insert(_buff.begin(), std::istream_iterator<char>(file), std::istream_iterator<char>());
+    file.close();
+  }
+
+  void sendBlockToPeer() {
+    Message msg;
+    msg.body_length(Message::max_body_length);
+
+    // Divide buffer to smaller chunks
+    char chunk[Message::max_body_length];
+    std::deque<char> deq(_buff.begin(), _buff.end());
+
+    // Send chunks until deq.size = 0
+    bool loop = true;
+    while(loop) {
+      memset(chunk, 0, sizeof(chunk));
+      for(size_t i = 0; i < 9360; ++i) {
+        if(deq.size() == 0) {
+          loop = false;
+          break;
+        }
+        chunk[i] = deq[0];
+        deq.pop_front();
+      }
+      std::memcpy(msg.body(), chunk, sizeof(chunk));
+      msg.encode_header();
+      write(msg);
+    }
+  }
+
+  void broadcastBlock(unsigned int id) {
+    _buff.clear();
+    loadBlockFileToBuffer(id);
+    for(auto peer : _peers) {
+      // If peer == this node -> skip iteration
+      if(peer.second.first == _ipPort.first && peer.second.second == _ipPort.second) continue;
+      std::cout << "Sending to: " << peer.second.first << ":" << std::to_string(peer.second.second) << std::endl;
+      auto connectEndpoint = _resolver.resolve(peer.second.first, std::to_string(peer.second.second));
+      connect(connectEndpoint);
+      sendBlockToPeer();
+    }
+    _buff.clear();
   }
 
   void close() { boost::asio::post(_io_context, [this]() { _socket.close(); }); }
