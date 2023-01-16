@@ -2,6 +2,7 @@
 #define CONVERT_H
 #include <sstream>
 #include <vector>
+#include <iomanip>
 
 namespace convert {
 
