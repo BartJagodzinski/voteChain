@@ -30,10 +30,6 @@ namespace keys {
         return false;
     }
 
-    std::string hashFromData(std::string mail, std::string password, std::string name, std::string surname, unsigned long long identificationNumber){
-        return picosha2::hash256_hex_string(mail+password+name+surname+std::to_string(identificationNumber));
-    }
-
     // std::vector<uint8_t> secKey(picosha2::k_digest_size);
     void privateKeyFromHash(std::vector<uint8_t> &secKey, std::string hash) { picosha2::hash256(hash, secKey); }
 }
