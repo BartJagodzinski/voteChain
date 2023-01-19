@@ -2,6 +2,7 @@
 #define MEMPOOL_H
 #include <iostream>
 #include <string>
+#include <fstream>
 #include <boost/asio.hpp>
 #include "mempool_session.h"
 #include "json.hpp"
