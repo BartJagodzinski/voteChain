@@ -10,7 +10,7 @@
 class Message {
 public:
     static constexpr std::size_t header_length = 4;
-    static constexpr std::size_t max_body_length = 2048;
+    static constexpr std::size_t max_body_length = 9375;
 
     Message() : _body_lenght(0) {}
     const char* data() const { return _data; }
@@ -19,6 +19,7 @@ public:
     const char* body() const { return _data + header_length; }
     char* body() { return _data + header_length; }
     std::size_t body_length() const { return _body_lenght; }
+    void clear() { memset(_data, 0, sizeof(_data)); }
 
     void body_length(std::size_t new_length) {
         _body_lenght = new_length;
