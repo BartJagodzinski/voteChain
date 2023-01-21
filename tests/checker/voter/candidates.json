@@ -1,0 +1,16 @@
+{
+    "candidates": [
+        {
+            "name" : "alice",
+            "address" : "1Alicewbg2vFvgHvshaL61HmCitaCGaBgA"
+        },
+        {
+            "name" : "bob",
+            "address" : "1Bob2gwbg2vFvgHvshaL61HmCitaCGaBgB"
+        },
+        {
+            "name" : "henry",
+            "address" : "1Henrywbg2vFvgHvshaL61HmCitaCGaBgH"
+        }
+    ]
+}
