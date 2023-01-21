@@ -24,42 +24,42 @@ private:
   boost::asio::ip::tcp::resolver _resolver;
   CheckerRoom _room;
   std::pair<std::string, unsigned short> _ipPort;
-  std::deque<Message> _write_msgs;
-  Message _read_msg;
+  std::deque<Message> _writeMsgs;
+  Message _readMsg;
   std::vector<char> _buff;
 
   void _accept() {
     _acceptor.async_accept(
-      [this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
-        if (!ec) {
-          std::make_shared<CheckerSession>(std::move(socket), _room)->start();
-        }
-        _accept();
-      });
+    [this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
+      if (!ec) {
+        std::make_shared<CheckerSession>(std::move(socket), _room)->start();
+      }
+      _accept();
+    });
   }
 
   void _write() {
-    boost::asio::async_write(_socket, boost::asio::buffer(_write_msgs.front().data(), _write_msgs.front().length()),
+    boost::asio::async_write(_socket, boost::asio::buffer(_writeMsgs.front().data(), _writeMsgs.front().length()),
       [this](boost::system::error_code ec, std::size_t /*length*/) {
         if (!ec) {
-          _write_msgs.pop_front();
-          if (!_write_msgs.empty()) _write();
+          _writeMsgs.pop_front();
+          if (!_writeMsgs.empty()) _write();
         }
     });
   }
 
   void _readHeader() {
-    boost::asio::async_read(_socket, boost::asio::buffer(_read_msg.data(), Message::header_length),
+    boost::asio::async_read(_socket, boost::asio::buffer(_readMsg.data(), Message::header_length),
       [this](boost::system::error_code ec, std::size_t /*length*/) {
-        if (!ec && _read_msg.decode_header()) _readBody();
-      });
+        if (!ec && _readMsg.decode_header()) _readBody();
+    });
   }
 
   void _readBody() {
-    boost::asio::async_read(_socket, boost::asio::buffer(_read_msg.body(), _read_msg.body_length()),
+    boost::asio::async_read(_socket, boost::asio::buffer(_readMsg.body(), _readMsg.body_length()),
       [this](boost::system::error_code ec, std::size_t /*length*/) {
         if (!ec) { _readHeader(); }
-      });
+    });
   }
 
 public:
@@ -73,10 +73,10 @@ public:
   void write(const Message& msg) {
     boost::asio::post(_io_context,
       [this, msg]() {
-        bool write_in_progress = !_write_msgs.empty();
-        _write_msgs.push_back(msg);
+        bool write_in_progress = !_writeMsgs.empty();
+        _writeMsgs.push_back(msg);
         if (!write_in_progress) _write();
-      });
+    });
   }
 
   void close() { boost::asio::post(_io_context, [this]() { _socket.close(); }); }
