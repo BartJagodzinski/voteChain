@@ -9,22 +9,22 @@
 #include "block.h"
 #include "merkle.h"
 #include "storage.h"
+#include "mempool.h"
 #include "picosha2.h"
 #include <boost/multiprecision/cpp_int.hpp>
 
 class Blockchain {
 private:
 	std::vector<Block*> _blockchain;
-	std::unordered_map<std::string,std::string> _data;
+	std::unordered_map<std::string, std::string> _data;
 	std::string _merkleRoot;
 	std::time_t _timestamp;
 	boost::multiprecision::uint256_t _nonce;
 	std::string _hash;
-	std::string _prevHash;
-	unsigned int _lenght = 0;
-	unsigned int _difficulty = 4;
-	const std::string _target = "0000000000000000000000000000000000000000000000000000000000000000";
-	Storage _storage = Storage(_lenght);
+	std::string _prevHash = "";
+	size_t _lenght = 0;
+	unsigned short _difficulty = 4;
+	const std::string _target = "00000000000000000000";
 public:
 	Blockchain(std::string blockZeroPrevHash) {
 		std::cout << "Blockchain C'tor" << std::endl;
@@ -33,19 +33,21 @@ public:
 		_timestamp = std::time(nullptr);
 		_prevHash = blockZeroPrevHash;
 		findNonce(picosha2::hash256_hex_string(std::to_string(_lenght) + std::to_string(_timestamp) + _merkleRoot + _prevHash));
-		_blockchain.push_back(new Block(_lenght, _timestamp, _prevHash, _merkleRoot, _nonce, _hash, _data));
-		_storage.createSingleBlockJson(_blockchain.at(0));
+		_blockchain.push_back(new Block(_lenght, _timestamp, _prevHash, _merkleRoot, _nonce, _hash, _difficulty, _data));
+		_prevHash = _blockchain.at(0)->getHash();
+		storage::createSingleBlockJson(_blockchain.at(0));
 		printLastBlock();
-		_blockchain.at(0)->~Block();
+		delete _blockchain.at(0);
 		_blockchain.clear();
 	}
 
-	Storage* getStorage() { return &_storage; }
 	std::unordered_map<std::string,std::string> &getData() { return _data; }
 
-	void setDifficulty(unsigned int newDifficulty) { _difficulty = newDifficulty; }
+	size_t getLenght() const { return _lenght; }
 
-	bool countVotes(std::unordered_map<std::string, unsigned int> &results) { return (_storage.countVotes(results)) ? true : false; }
+	void setDifficulty(unsigned short newDifficulty) { _difficulty = (newDifficulty <= 20) ? newDifficulty : _difficulty; }
+
+	bool countVotes(std::unordered_map<std::string, unsigned int> &results) { return (storage::countVotes(results, _lenght)) ? true : false; }
 
 	void hash() {
 		_merkleRoot = merkle::get_merkle_root_hash(_data);
@@ -68,16 +70,16 @@ public:
 	void addTx(std::string sender, std::string receiver) { _data.insert({sender, receiver}); }
 
 	void addBlock() {
-		_lenght++;
+		++_lenght;
 		_blockchain.reserve(_blockchain.size() + 1);
 		_timestamp = std::time(nullptr);
 		hash();
-		_blockchain.push_back(new Block(_lenght, _timestamp, _prevHash, _merkleRoot, _nonce, _hash, _data));
-		_storage.createSingleBlockJson(_blockchain.at(0));
+		_blockchain.push_back(new Block(_lenght, _timestamp, _prevHash, _merkleRoot, _nonce, _hash, _difficulty, _data));
+		storage::createSingleBlockJson(_blockchain.at(0));
 		printLastBlock();
 		_prevHash = _hash;
 		_data.clear();
-		_blockchain.at(0)->~Block();
+		delete _blockchain.at(0);
 		_blockchain.clear();
 	}
 
@@ -85,13 +87,13 @@ public:
 
 	void addRemainingTxs() {
 		while (_blockchain.size() > 0) {
-			_storage.createSingleBlockJson(_blockchain.at(0));
-			_blockchain.at(0)->~Block();
+			storage::createSingleBlockJson(_blockchain.at(0));
+			delete _blockchain.at(0);
 			_blockchain.erase(_blockchain.begin());
 		}
 	}
 
-	void wipe() { for (auto el : _blockchain) el->~Block();	}
+	void wipe() { for (auto el : _blockchain) delete el; }
 
 	~Blockchain() { wipe(); std::cout << "Blockchain D'tor" << std::endl; }
 };
