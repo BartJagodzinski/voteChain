@@ -1,0 +1,25 @@
+{
+    "voters": [
+        {
+            "email" : "voter1@gmail.com",
+            "password" : "password1",
+            "name" : "name1",
+            "surname" : "surname1",
+            "id" : "1"
+        },
+        {
+            "email" : "voter2@gmail.com",
+            "password" : "password2",
+            "name" : "name2",
+            "surname" : "surname2",
+            "id" : "2"
+        },
+        {
+            "email" : "voter3@gmail.com",
+            "password" : "password3",
+            "name" : "name3",
+            "surname" : "surname3",
+            "id" : "3"
+        }
+    ]
+}
