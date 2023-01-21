@@ -4,22 +4,33 @@
 #include <fstream>
 #include <string>
 #include "block.h"
-#include "blockchain.h"
-#include "merkle.h"
-#include "mempool.h"
-#include "picosha2.h"
 #include "json.hpp"
 #include <boost/multiprecision/cpp_int.hpp>
 
-class Storage {
-private:
-	unsigned int &_lenght;
-public:
-	Storage(unsigned int &lenght) : _lenght(lenght) { std::cout << "Storage C'tor" << std::endl; };
+namespace storage {
 
-	// return 0 if not voted, 1 if voted and -1 if error occurs.
-	int checkIfAddressVoted(std::string address) {
-		for(size_t id = 1; id <= _lenght; ++id) {
+	bool checkVotes(std::unordered_map<std::string, std::string> &votesToCheck, std::unordered_map<std::string, std::string> &votesChecked, size_t lenght) {
+		for(size_t id = 1; id <= lenght; ++id) {
+			std::ifstream blockJsonFile("block_" + std::to_string(id) + ".json");
+			if (!blockJsonFile)	return false;
+			nlohmann::json blockJson;
+			blockJsonFile >> blockJson;
+			std::unordered_map<std::string, std::string> votes = blockJson["votes"];
+			blockJsonFile.close();
+			for (auto it = votesToCheck.begin(); it != votesToCheck.end(); ++it)
+				if (votes.count(it->first) > 0) votesToCheck.erase(it);
+		}
+		auto it = votesToCheck.begin();
+		while (it != votesToCheck.end()) {
+			votesChecked.insert({it->first, it->second});
+			it = votesToCheck.erase(it);
+		}
+		return true;
+	}
+
+	// Return 0 if not voted, 1 if voted and -1 if error occurs.
+	int checkIfAddressVoted(std::string address, size_t lenght) {
+		for(size_t id = 1; id <= lenght; ++id) {
 			std::ifstream blockJsonFile("block_" + std::to_string(id) + ".json");
 			if (!blockJsonFile)	return -1;
 			nlohmann::json blockJson;
@@ -31,8 +42,8 @@ public:
 		return 0;
 	}
 
-	bool countVotes(std::unordered_map<std::string, unsigned int> &results) {
-		for(size_t id = 1; id <= _lenght; ++id) {
+	bool countVotes(std::unordered_map<std::string, unsigned int> &results, size_t lenght) {
+		for(size_t id = 1; id <= lenght; ++id) {
 			std::ifstream blockJsonFile("block_" + std::to_string(id) + ".json");
 			if (!blockJsonFile)	return false;
 			nlohmann::json blockJson;
@@ -56,13 +67,20 @@ public:
 
 		nlohmann::json blockJson;
 		blockJsonFile >> blockJson;
-		std::time_t timestamp = blockJson["timestamp"];
-		std::string prevHash = blockJson["prevHash"];
-		std::string merkleRoot = blockJson["merkleRoot"];
+
 		boost::multiprecision::uint256_t nonce{ blockJson["nonce"].get<std::string>() };
-		std::string hash = blockJson["hash"];
 		std::unordered_map<std::string, std::string> votes = blockJson["votes"];
-		Block* block = new Block(id, timestamp, prevHash, merkleRoot, nonce, hash, votes);
+
+		Block* block = new Block
+			(id,
+			blockJson["timestamp"].get<std::time_t>(),
+			blockJson["prevHash"].get<std::string>(),
+			blockJson["merkleRoot"].get<std::string>(),
+			nonce,
+			blockJson["hash"].get<std::string>(),
+			blockJson["target"].get<unsigned short>(),
+			votes);
+
 		blockJsonFile.close();
 
 		return block;
@@ -79,15 +97,13 @@ public:
 			{"merkleRoot", block->getMerkleRoot()},
 			{"nonce", block->getNonce().str()},
 			{"hash", block->getHash()},
+			{"target", block->getTarget()},
 			{"votes", block->getData()}
 		};
 
-		blockchainJson << std::setw(2) << blockJson << std::endl;
+		blockchainJson << std::setw(1) << blockJson << std::endl;
 		blockchainJson.close();
 	}
-
-	~Storage() { std::cout << "Storage D'tor" << std::endl; };
-};
-
+}
 
 #endif
