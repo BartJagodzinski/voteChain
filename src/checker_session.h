@@ -15,7 +15,7 @@ private:
   boost::asio::ip::tcp::socket _socket;
   CheckerRoom &_room;
   Message _readMsg;
-  std::deque<Message> _write_msgs;
+  std::deque<Message> _writeMsgs;
 
   void _readHeader() {
     auto self(shared_from_this());
@@ -37,11 +37,11 @@ private:
 
   void _write() {
     auto self(shared_from_this());
-    boost::asio::async_write(_socket, boost::asio::buffer(_write_msgs.front().data(), _write_msgs.front().length()),
+    boost::asio::async_write(_socket, boost::asio::buffer(_writeMsgs.front().data(), _writeMsgs.front().length()),
       [this, self](boost::system::error_code ec, std::size_t /*length*/) {
         if (!ec) {
-          _write_msgs.pop_front();
-          if (!_write_msgs.empty()) _write();
+          _writeMsgs.pop_front();
+          if (!_writeMsgs.empty()) _write();
         }
     });
   }
@@ -56,8 +56,8 @@ public:
   }
 
   void deliver(const Message& msg) {
-    bool write_in_progress = !_write_msgs.empty();
-    _write_msgs.push_back(msg);
+    bool write_in_progress = !_writeMsgs.empty();
+    _writeMsgs.push_back(msg);
     if (!write_in_progress) _write();
   }
 
