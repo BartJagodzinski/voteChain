@@ -8,6 +8,7 @@
 class Voter {
 public:
   virtual ~Voter() {}
+  virtual void deliver(const Message& msg) = 0;
 };
 
 #endif
