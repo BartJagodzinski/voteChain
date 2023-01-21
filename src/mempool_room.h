@@ -11,11 +11,17 @@
 
 class MempoolRoom {
 private:
-  std::set<std::shared_ptr<Voter>> _voter;
+  std::set<std::shared_ptr<Voter>> _voters;
 public:
-  void join(std::shared_ptr<Voter> voter) { _voter.insert(voter); }
 
-  void leave(std::shared_ptr<Voter> voter) { _voter.erase(voter); }
+  void join(std::shared_ptr<Voter> voter) { _voters.insert(voter); }
+
+  void leave(std::shared_ptr<Voter> voter) { _voters.erase(voter); }
+
+  void deliver(const Message& msg) {
+    for (auto voter : _voters)
+      voter->deliver(msg);
+  }
 };
 
 #endif
