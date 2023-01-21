@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
 		boost::asio::io_context ioContextMempool;
 		boost::asio::ip::tcp::endpoint mempoolListenEndpoint(boost::asio::ip::address::from_string(mempoolIpPort.first), mempoolIpPort.second);
 
-		Mempool mempool(ioContextMempool, mempoolListenEndpoint, std::time(nullptr)+500);
+		Mempool mempool(ioContextMempool, mempoolListenEndpoint, std::time(nullptr)+30);
 		std::thread mempoolThrd([&ioContextMempool](){ ioContextMempool.run(); });
 
 		if(!mempool.loadVotesFromJson("mempool_load_test.json")) std::cerr << "Error in loading votes from json." << std::endl;
@@ -66,9 +66,9 @@ int main(int argc, char* argv[]) {
 // ------------------------------------------------------------------------------------------------------------------------------------------------------
 
 		Blockchain blockchain("voteChain v23.1");
-		blockchain.setDifficulty(5);
+		blockchain.setDifficulty(4);
 
-		while(mempool.isOpen() || mempool.isEmpty()) {
+		while(mempool.isOpen() || !mempool.isEmpty()) {
 			mempool.getVotes(blockchain.getData(), 10, blockchain.getLenght());
 			blockchain.addBlock();
 		}
