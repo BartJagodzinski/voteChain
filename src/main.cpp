@@ -1,16 +1,17 @@
+#include <unordered_map>
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <tuple>
-#include <unordered_map>
-#include "merkle.h"
+#include <boost/multiprecision/cpp_int.hpp>
 #include "blockchain.h"
+#include "picosha2.h"
+#include "checker.h"
 #include "mempool.h"
 #include "storage.h"
-#include "node.h"
-#include "picosha2.h"
+#include "merkle.h"
 #include "json.hpp"
-#include <boost/multiprecision/cpp_int.hpp>
+#include "config.h"
 
 int main(int argc, char* argv[]) {
 
@@ -35,82 +36,57 @@ int main(int argc, char* argv[]) {
 	std::cout << merkle::get_merkle_root_hash(map);
 	*/
 
-	// uint256 test
-	/*
-	boost::multiprecision::uint256_t uint256 {"11579208923731619542357098500868790785326998466564056403945758400791312963993"};
-	boost::multiprecision::uint256_t two = 2;
-
-	std::cout << uint256 * two << std::endl;
-	*/
-
-	// Blockchain tests
-
-	/*
-	Blockchain b("voteChain v22.11", 1667732142);
-	b.printLastBlock();
-
-	for (unsigned int i = 0; i < 100; i++) {
-		for (unsigned int j = 0; j < 10000; j++) {
-			b.addTx(picosha2::hash256_hex_string(std::to_string(j)), picosha2::hash256_hex_string(std::to_string(i)));
-		}
-		b.addBlock();
-	}
-
-	*/
 
 	// Mempool load from json + listening for votes from clients
-	/*
-	boost::asio::io_context io_context;
+//*
+	try {
 
-    boost::asio::ip::tcp::endpoint mempoolListenEndpoint(boost::asio::ip::tcp::v4(), 9876);
-	// Start mempool with deadline 20s from now
-    Mempool mempool(io_context, mempoolListenEndpoint, std::time(nullptr)+20);
-	// Load sample votes from json file, votes can be added by starting client and sending vote from client side
-	if(!mempool.loadVotesFromJson("mempool_load_test.json")) std::cout << "err in loading from json" << std::endl;
+		std::pair<std::string, unsigned short> mempoolIpPort;
+		if(!config::getEndpointsFromJson(mempoolIpPort, "mempool_config.json", "mempool")) { return EXIT_FAILURE; }
 
-	boost::asio::ip::tcp::endpoint nodeListenEndpoint(boost::asio::ip::tcp::v4(), 8888);
-    Node node(io_context, nodeListenEndpoint);
-    boost::asio::ip::tcp::resolver resolver(io_context);
+		boost::asio::io_context ioContextMempool;
+		boost::asio::ip::tcp::endpoint mempoolListenEndpoint(boost::asio::ip::address::from_string(mempoolIpPort.first), mempoolIpPort.second);
 
-    std::thread t([&io_context](){ io_context.run(); });
+		Mempool mempool(ioContextMempool, mempoolListenEndpoint, std::time(nullptr)+500);
+		std::thread mempoolThrd([&ioContextMempool](){ ioContextMempool.run(); });
 
-	Blockchain b("voteChain v23.1");
-	b.setDifficulty(4);
-	std::unordered_map<std::string, unsigned int> results;
+		if(!mempool.loadVotesFromJson("mempool_load_test.json")) std::cerr << "Error in loading votes from json." << std::endl;
 
-	// Hardcoded lock !mempool.isEmpty() to avoid generating empty blocks
-	while(mempool.isOpen() && !mempool.isEmpty()) {
-		mempool.getVotes(b.getData(), 3);
-		b.addBlock();
-	}
-	b.countVotes(results);
-	std::cout << "Result :" << std::endl;
-	for(auto const &result : results)
-		std::cout << result.first << ": " << result.second <<std::endl;
+// ------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	Storage* storage = b.getStorage();
-	// Test of func checkIfAddressVoted
-	std::string address = "000c15d0ea8224c9649c9adee30c3030ee769b2b5f6d6594f94d446adf60396b";
-	std::cout <<"Address : " + address + " voted: "  << storage->checkIfAddressVoted(address) << std::endl;
-    node.close();
-	mempool.close();
-	t.join();
-	*/
+		std::pair<std::string, unsigned short> checkerIpPort;
+		if(!config::getEndpointsFromJson(checkerIpPort, "checker_config.json", "checker")) { return EXIT_FAILURE; }
+		boost::asio::io_context ioContextChecker;
+		boost::asio::ip::tcp::endpoint checkerListenEndpoint(boost::asio::ip::address::from_string(checkerIpPort.first), checkerIpPort.second);
 
-	// Count votes
-	/*
+		Checker checker(ioContextChecker, checkerListenEndpoint);
+		std::thread checkerThrd([&ioContextChecker](){ ioContextChecker.run(); });
 
-	Storage storage(50);
 
-	std::unordered_map<std::string, unsigned int> results;
+// ------------------------------------------------------------------------------------------------------------------------------------------------------
 
-	if(storage.countVotes(results)) {
+		Blockchain blockchain("voteChain v23.1");
+		blockchain.setDifficulty(5);
+
+		while(mempool.isOpen() || mempool.isEmpty()) {
+			mempool.getVotes(blockchain.getData(), 10, blockchain.getLenght());
+			blockchain.addBlock();
+		}
+
+		std::unordered_map<std::string, unsigned int> results;
+		blockchain.countVotes(results);
+		std::cout << "Result :" << std::endl;
 		for(auto const &result : results)
 			std::cout << result.first << ": " << result.second <<std::endl;
-	}
 
-	std::cout << storage.checkIfAddressVoted("000c15d0ea8224c9649c9adee30c3030ee769b2b5f6d6594f94d446adf60396b") << std::endl;
-	*/
+		mempool.close();
+		checker.close();
+    	mempoolThrd.join();
+    	checkerThrd.join();
+
+  	} catch (std::exception& e) { std::cerr << "Exception: " << e.what() << "\n"; }
+//*/
+
 
 	return EXIT_SUCCESS;
 }
