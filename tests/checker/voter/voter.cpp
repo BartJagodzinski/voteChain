@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) {
     std::string email(argv[1]); std::string password(argv[2]); std::string name(argv[3]); std::string surname(argv[4]); std::string id(argv[5]);
     boost::to_lower(email); boost::to_lower(name); boost::to_lower(surname);
     std::pair<std::string, unsigned short> checkerIpPort;
-    if(!config::getEndpointsFromJson(checkerIpPort, email+".json", "checker")) { return EXIT_FAILURE; }
+    if(!config::getEndpointsFromJson(checkerIpPort, "checker_endpoint.json", "checker")) { return EXIT_FAILURE; }
 
     boost::asio::io_context io_context;
     boost::asio::ip::tcp::resolver resolver(io_context);
