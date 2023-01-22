@@ -4,28 +4,13 @@
 
 #ifndef VOTE_SENDER_H
 #define VOTE_SENDER_H
-
-#include <cstdlib>
 #include <deque>
 #include <iostream>
-#include <thread>
 #include <fstream>
 #include <string>
-#include <stdlib.h>
-#include <unordered_set>
 #include <boost/asio.hpp>
 #include <boost/algorithm/string.hpp>
 #include "message.hpp"
-#include "unordered_set_hash.h"
-#include "ripemd160.h"
-#include "security.h"
-#include "picosha2.h"
-#include "convert.h"
-#include "address.h"
-#include "json.hpp"
-#include "base58.h"
-#include "keys.h"
-#include "config.h"
 
 class VoteSender {
 private:
@@ -42,7 +27,7 @@ private:
           _writeMsgs.pop_front();
           if (!_writeMsgs.empty()) _write();
         }
-        else { std::cerr << ec.message() << std::endl; _socket.close(); }
+        else _socket.close();
     });
   }
 
@@ -50,7 +35,7 @@ private:
     boost::asio::async_read(_socket, boost::asio::buffer(_readMsg.data(), Message::header_length),
       [this](boost::system::error_code ec, std::size_t /*length*/) {
         if (!ec && _readMsg.decode_header()) _readBody();
-        else { std::cerr << ec.message() << std::endl; _socket.close(); }
+        else _socket.close();
     });
   }
 
@@ -64,7 +49,7 @@ private:
           _readMsg.clear();
           _readHeader();
         }
-        else { std::cerr << ec.message() << std::endl; _socket.close(); }
+        else _socket.close();
     });
   }
 
