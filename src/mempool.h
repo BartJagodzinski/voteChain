@@ -36,7 +36,7 @@ public:
 	}
 
 	bool isOpen() { return (std::time(nullptr) < _deadline) ? true : false; }
-	bool isEmpty() { return (_votes.size() == 0) ? true : false; }
+	bool isEmpty() { return (_votes.size() == 0 && _votesToCheck.size() == 0) ? true : false; }
 	void close() { boost::asio::post(_io_context, [this]() { _socket.close(); }); }
 
 	void getVotes(std::unordered_map<std::string, std::string> &candidateBlockData, unsigned int nbOfVotes, size_t blockchainLenght) {
