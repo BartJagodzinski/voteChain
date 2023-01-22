@@ -15,29 +15,7 @@
 
 int main(int argc, char* argv[]) {
 
-	// Merkle root hash test
-	/*
-	std::vector<std::tuple<std::string, std::string>> somedata;
-	somedata.push_back(std::make_tuple("A", "B"));
-	somedata.push_back(std::make_tuple("C", "D"));
-	somedata.push_back(std::make_tuple("E", "F"));
-	somedata.push_back(std::make_tuple("G", "H"));
-	somedata.push_back(std::make_tuple("I", "J"));
-	somedata.push_back(std::make_tuple("K", "L"));
-	std::cout << merkle::get_merkle_root_hash(somedata) << std::endl;
 
-	std::unordered_map<std::string, std::string> map;
-	map.insert(std::pair<std::string, std::string>("A", "B"));
-	map.insert(std::pair<std::string, std::string>("C", "D"));
-	map.insert(std::pair<std::string, std::string>("E", "F"));
-	map.insert(std::pair<std::string, std::string>("G", "H"));
-	map.insert(std::pair<std::string, std::string>("I", "J"));
-	map.insert(std::pair<std::string, std::string>("K", "L"));
-	std::cout << merkle::get_merkle_root_hash(map);
-	*/
-
-
-	// Mempool load from json + listening for votes from clients
 //*
 	try {
 
@@ -80,13 +58,10 @@ int main(int argc, char* argv[]) {
 			std::cout << result.first << ": " << result.second <<std::endl;
 
 		mempool.close();
-		checker.close();
     	mempoolThrd.join();
+		checker.close();
     	checkerThrd.join();
-
-  	} catch (std::exception& e) { std::cerr << "Exception: " << e.what() << "\n"; }
-//*/
-
-
+  	} catch (std::exception& e) { std::cerr << "Exception: " << e.what() << std::endl; return EXIT_FAILURE; }
 	return EXIT_SUCCESS;
+//*/
 }
