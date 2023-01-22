@@ -12,6 +12,7 @@
 #include "message.hpp"
 #include "voter.h"
 #include "json.hpp"
+#include "picosha2.h"
 
 class MempoolSession : public Voter, public std::enable_shared_from_this<MempoolSession> {
 private:
@@ -19,6 +20,8 @@ private:
   boost::asio::ip::tcp::socket _socket;
   MempoolRoom &_room;
   Message _readMsg;
+	unsigned short _difficulty = 5;
+	const std::string _target = "00000000000000000000";
 
   void _readHeader() {
     auto self(shared_from_this());
@@ -35,7 +38,17 @@ private:
       [this, self](boost::system::error_code ec, std::size_t /*length*/) {
         if (!ec) {
           std::string message = _readMsg.body();
-          if(message.size() > 67 && message.at(0) == '1' && message.at(34) == ':' && message.at(35) == '1') _votesToCheck.insert({message.substr(0, 34), message.substr(35, 68)});
+          if(message.size() > 81) {
+            std::string sender = message.substr(0, 34);
+            std::string receiver = message.substr(35, 34);
+            std::string timestamp = message.substr(70, 10);
+            std::string nonce = message.substr(81, message.size()-70);
+            std::string hash = picosha2::hash256_hex_string(sender+receiver+timestamp);
+            hash = picosha2::hash256_hex_string(hash+nonce);
+            if(sender.at(0) == '1' && receiver.at(0) == '1' && hash.substr(0, _difficulty) == _target.substr(0, _difficulty))
+              _votesToCheck.insert({message.substr(0, 34), message.substr(35, 34)});
+
+          }
         }
         _room.leave(shared_from_this());
     });
