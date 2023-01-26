@@ -26,6 +26,7 @@ private:
         if (!ec) {
           _writeMsgs.pop_front();
           if (!_writeMsgs.empty()) _write();
+          std::cout << "Vote sent successfully. " << std::endl;
         }
         else _socket.close();
     });
@@ -43,9 +44,8 @@ private:
     boost::asio::async_read(_socket, boost::asio::buffer(_readMsg.body(), _readMsg.body_length()),
       [this](boost::system::error_code ec, std::size_t /*length*/) {
         if (!ec) {
-          std::ofstream whitelistFile("whitelist.json", std::ios::app);
-          whitelistFile << _readMsg.body();
-          whitelistFile.close();
+          std::string msg = _readMsg.body();
+          std::copy(msg.begin(), msg.end(), std::back_inserter(_buff));
           _readMsg.clear();
           _readHeader();
         }
@@ -56,6 +56,8 @@ private:
 public:
   VoteSender(boost::asio::io_context& io_context, const boost::asio::ip::tcp::resolver::results_type& endpoints)
   : _io_context(io_context), _socket(io_context) { connect(endpoints); }
+
+  const std::vector<char> &getBuff() { return _buff; }
 
   void connect(const boost::asio::ip::tcp::resolver::results_type& endpoints) { boost::asio::async_connect(_socket, endpoints, [this](boost::system::error_code ec, boost::asio::ip::tcp::endpoint) {
     if (!ec) _readHeader();
