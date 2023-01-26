@@ -1,3 +1,7 @@
+// Copyright (c) 2003-2022 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Distributed under the Boost Software License, Version 1.0. (See accompanying
+// file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+
 #ifndef MEMPOOL_H
 #define MEMPOOL_H
 #include <iostream>
@@ -36,15 +40,21 @@ public:
 	}
 
 	bool isOpen() { return (std::time(nullptr) < _deadline) ? true : false; }
-	bool isEmpty() { return (_votes.size() == 0 && _votesToCheck.size() == 0) ? true : false; }
-	void close() { boost::asio::post(_io_context, [this]() { _socket.close(); }); }
+	bool isEmpty() { return (_votes.size() == 0) ? true : false; }
+	bool votesToCheckEmpty() { return (_votesToCheck.size() == 0) ? true : false; }
+	void close() { boost::asio::post(_io_context, [this]() { _socket.close(); _io_context.stop(); }); }
 
-	void getVotes(std::unordered_map<std::string, std::string> &candidateBlockData, unsigned int nbOfVotes, size_t blockchainLenght) {
+	void addLastVote(std::map<std::string, std::string> &candidateBlockVotes, size_t lenght) {
+		auto it = _votesToCheck.begin();
+		if(storage::checkIfAddressVoted(it->first, lenght) == 0) candidateBlockVotes.insert({it->first, it->second});
+	}
+
+	void getVotes(std::map<std::string, std::string> &candidateBlockVotes, unsigned int nbOfVotes, size_t blockchainLenght) {
 		if(!storage::checkVotes(_votesToCheck, _votes, blockchainLenght)) std::cerr << "Error in storage::checkVotes" << std::endl;
 		auto it = _votes.begin();
 		// Both must be true to avoid removing more votes than are in mempool
 		while (it != _votes.end() && nbOfVotes > 0) {
-			candidateBlockData.insert({it->first, it->second});
+			candidateBlockVotes.insert({it->first, it->second});
 			it = _votes.erase(it);
 			--nbOfVotes;
 		}
