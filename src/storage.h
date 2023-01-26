@@ -10,21 +10,25 @@
 namespace storage {
 
 	bool checkVotes(std::unordered_map<std::string, std::string> &votesToCheck, std::unordered_map<std::string, std::string> &votesChecked, size_t lenght) {
-		for(size_t id = 1; id <= lenght; ++id) {
+		if(votesToCheck.size() < 2) return true;
+		std::unordered_map<std::string, std::string> votesToCheckCpy = votesToCheck;
+		votesToCheck.clear();
+		for(size_t id = 0; id <= lenght; ++id) {
 			std::ifstream blockJsonFile("block_" + std::to_string(id) + ".json");
-			if (!blockJsonFile)	return false;
-			nlohmann::json blockJson;
+			if (!blockJsonFile)	{ std::cerr << "Error in reading block_"+std::to_string(id)+".json" << std::endl; return false; }
+			nlohmann::ordered_json blockJson;
 			blockJsonFile >> blockJson;
-			std::unordered_map<std::string, std::string> votes = blockJson["votes"];
 			blockJsonFile.close();
-			for (auto it = votesToCheck.begin(); it != votesToCheck.end(); ++it)
-				if (votes.count(it->first) > 0) votesToCheck.erase(it);
+			std::unordered_map<std::string, std::string> votes = blockJson["votes"];
+			//auto it = votesToCheckCpy.begin();
+			for(auto it = votesToCheckCpy.begin(); it != votesToCheckCpy.end();) {
+				if (votes.count(it->first) > 0) it = votesToCheckCpy.erase(it);
+				else ++it;
+			}
 		}
-		auto it = votesToCheck.begin();
-		while (it != votesToCheck.end()) {
+		auto it = votesToCheckCpy.begin();
+		for(auto it = votesToCheckCpy.begin(); it != votesToCheckCpy.end(); ++it)
 			votesChecked.insert({it->first, it->second});
-			it = votesToCheck.erase(it);
-		}
 		return true;
 	}
 
@@ -32,12 +36,12 @@ namespace storage {
 	int checkIfAddressVoted(std::string address, size_t lenght) {
 		for(size_t id = 1; id <= lenght; ++id) {
 			std::ifstream blockJsonFile("block_" + std::to_string(id) + ".json");
-			if (!blockJsonFile)	return -1;
-			nlohmann::json blockJson;
+			if (!blockJsonFile)	{ std::cerr << "Error in reading block_"+std::to_string(id)+".json" << std::endl; return -1; }
+			nlohmann::ordered_json blockJson;
 			blockJsonFile >> blockJson;
-			std::unordered_map<std::string, std::string> votes = blockJson["votes"];
+			std::map<std::string, std::string> votes = blockJson["votes"];
 			blockJsonFile.close();
-			if (votes.find(address) != votes.end()) return 1;
+			if (votes.count(address) > 0) return 1;
 		}
 		return 0;
 	}
@@ -45,10 +49,10 @@ namespace storage {
 	bool countVotes(std::unordered_map<std::string, unsigned int> &results, size_t lenght) {
 		for(size_t id = 1; id <= lenght; ++id) {
 			std::ifstream blockJsonFile("block_" + std::to_string(id) + ".json");
-			if (!blockJsonFile)	return false;
-			nlohmann::json blockJson;
+			if (!blockJsonFile)	{ std::cerr << "Error in reading block_"+std::to_string(id)+".json" << std::endl; return false; }
+			nlohmann::ordered_json blockJson;
 			blockJsonFile >> blockJson;
-			std::unordered_map<std::string, std::string> votes = blockJson["votes"];
+			std::map<std::string, std::string> votes = blockJson["votes"];
 			blockJsonFile.close();
 
 			for(auto const &vote : votes) {
@@ -60,16 +64,16 @@ namespace storage {
 		return true;
 	}
 
-	Block* readBlockFromJson(unsigned int id) {
+	Block* readBlockFromJson(size_t id) {
 		std::string fileName = "block_" + std::to_string(id) + ".json";
 		std::ifstream blockJsonFile(fileName);
-		if (!blockJsonFile)	return nullptr;
+		if (!blockJsonFile)	{ std::cerr << "Error in reading block_"+std::to_string(id)+".json" << std::endl; return nullptr; }
 
-		nlohmann::json blockJson;
+		nlohmann::ordered_json blockJson;
 		blockJsonFile >> blockJson;
 
 		boost::multiprecision::uint256_t nonce{ blockJson["nonce"].get<std::string>() };
-		std::unordered_map<std::string, std::string> votes = blockJson["votes"];
+		std::map<std::string, std::string> votes = blockJson["votes"];
 
 		Block* block = new Block
 			(id,
@@ -90,7 +94,7 @@ namespace storage {
 		std::string fileName = "block_" + std::to_string(block->getId()) + ".json";
 		std::ofstream blockchainJson(fileName, std::ios::app);
 
-		nlohmann::json blockJson = {
+		nlohmann::ordered_json blockJson = {
 			{"id", block->getId()},
 			{"timestamp", block->getTimestamp()},
 			{"prevHash", block->getPrevHash()},
@@ -98,7 +102,7 @@ namespace storage {
 			{"nonce", block->getNonce().str()},
 			{"hash", block->getHash()},
 			{"target", block->getTarget()},
-			{"votes", block->getData()}
+			{"votes", block->getVotes()}
 		};
 
 		blockchainJson << std::setw(1) << blockJson << std::endl;
