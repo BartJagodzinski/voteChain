@@ -66,7 +66,7 @@ int main(int argc, char* argv[]) {
     std::unordered_set<std::pair<std::string, std::string>, UnorderedSetHashPair<std::string, std::string>> candidates;
     if(!config::getCandidatesFromJson(candidates)) return EXIT_FAILURE;
 
-    std::string voteStr;
+    std::string voteStr="";
     std::string receiverAddr;
     bool isCandidateOnList = false;
     for(auto const &candidate : candidates) {
@@ -91,10 +91,10 @@ int main(int argc, char* argv[]) {
     if(std::time(nullptr) > deadline) { std::cerr << "Voting is over. " << std::endl; return EXIT_FAILURE; }
 
     voteStr = voteStr+":"+std::to_string(timestamp)+":"+nonce.str()+";";
-    std::cout << voteStr << std::endl;
     char vote[voteStr.size()]="";
     std::strcat(vote, voteStr.c_str());
     Message msg;
+    msg.clear();
     msg.body_length(voteStr.size());
     std::memcpy(msg.body(), vote, msg.body_length());
     msg.encode_header();
