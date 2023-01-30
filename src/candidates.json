@@ -2,15 +2,15 @@
     "candidates": [
         {
             "name" : "alice",
-            "address" : "1Alicewbg2vFvgHvshaL61HmCitaCGaBgA"
+            "address" : "1ALiCEeizvMFbULUa5RzGGMfAezrY8GzWycuUaf2DTBvAvszJQm"
         },
         {
             "name" : "bob",
-            "address" : "1Bob2gwbg2vFvgHvshaL61HmCitaCGaBgB"
+            "address" : "1Bobm9wN2c6oKxZ1SGPrJGcxN5uaNm8MpsroguFqmh2a6vSfskY"
         },
         {
             "name" : "henry",
-            "address" : "1Henrywbg2vFvgHvshaL61HmCitaCGaBgH"
+            "address" : "1HenryN2c6oKxZ1SGPrJGcHvs8GzWycuUafHmCi2SK5taCGavi5"
         }
     ]
 }
