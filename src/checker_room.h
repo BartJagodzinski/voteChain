@@ -15,12 +15,10 @@
 class CheckerRoom {
 private:
   std::set<std::shared_ptr<Voter>> _voters;
-  std::unordered_set<std::tuple<std::string, std::string, std::string, std::string, std::string>, UnorderedSetHashTuple<std::string>> _whitelist;
   std::vector<char> _buff;
   std::vector<Message> _msgs;
 public:
   CheckerRoom() {
-    if(!config::getWhitelistFromJson(_whitelist)) { exit; }
     loadWhitelistFile();
     std::cout << "CheckerRoom C'tor" << std::endl;
   }
@@ -35,7 +33,7 @@ public:
   void leave(std::shared_ptr<Voter> voter) { _voters.erase(voter); }
 
   void loadWhitelistFile() {
-    std::ifstream file("whitelist.json", std::ios::in | std::ios::binary);
+    std::ifstream file("whitelistMempoolEndpoint.json", std::ios::in | std::ios::binary);
     // Get file size
     file.seekg(0, std::ios::end);
     size_t size = file.tellg();
