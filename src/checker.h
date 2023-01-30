@@ -22,6 +22,7 @@ private:
   boost::asio::ip::tcp::acceptor _acceptor;
   boost::asio::ip::tcp::socket _socket;
   boost::asio::ip::tcp::resolver _resolver;
+  std::time_t _deadline;
   CheckerRoom _room;
   std::pair<std::string, unsigned short> _ipPort;
   std::deque<Message> _writeMsgs;
@@ -31,9 +32,7 @@ private:
   void _accept() {
     _acceptor.async_accept(
     [this](boost::system::error_code ec, boost::asio::ip::tcp::socket socket) {
-      if (!ec) {
-        std::make_shared<CheckerSession>(std::move(socket), _room)->start();
-      }
+      if (!ec) std::make_shared<CheckerSession>(std::move(socket), _room)->start();
       _accept();
     });
   }
@@ -63,12 +62,14 @@ private:
   }
 
 public:
-  Checker(boost::asio::io_context& io_context, const boost::asio::ip::tcp::endpoint& endpoint)
-  : _io_context(io_context), _acceptor(io_context, endpoint), _socket(io_context), _resolver(io_context)
+  Checker(boost::asio::io_context& io_context, const boost::asio::ip::tcp::endpoint& endpoint, std::time_t deadline)
+  : _io_context(io_context), _acceptor(io_context, endpoint), _socket(io_context), _resolver(io_context), _deadline(deadline)
   {
     _accept();
     std::cout << "Checker C'tor" << std::endl;
   }
+
+  bool isOpen() { return (std::time(nullptr) < _deadline) ? true : false; }
 
   void write(const Message& msg) {
     boost::asio::post(_io_context,
@@ -79,7 +80,7 @@ public:
     });
   }
 
-  void close() { boost::asio::post(_io_context, [this]() { _socket.close(); }); }
+  void close() { boost::asio::post(_io_context, [this]() { _socket.close(); _io_context.stop(); }); }
 
   ~Checker() { std::cout << "Checker D'tor" << std::endl;}
 };
