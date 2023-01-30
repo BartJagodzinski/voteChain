@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 #include <tuple>
-#include <unordered_map>
+#include <map>
 #include <ctime>
 #include <boost/multiprecision/cpp_int.hpp>
 
@@ -17,10 +17,10 @@ private:
 	boost::multiprecision::uint256_t _nonce;
 	std::string _hash;
 	unsigned short _target;
-	std::unordered_map<std::string,std::string> _data;
+	std::map<std::string,std::string> _votes;
 public:
-	Block(unsigned int id, std::time_t timestamp, std::string prevHash, std::string merkleRoot, boost::multiprecision::uint256_t nonce, std::string hash, unsigned short target, std::unordered_map<std::string, std::string> &data)
-	: _id(id), _timestamp(timestamp), _prevHash(prevHash), _merkleRoot(merkleRoot), _nonce(nonce), _hash(hash), _target(target), _data(data)
+	Block(unsigned int id, std::time_t timestamp, std::string prevHash, std::string merkleRoot, boost::multiprecision::uint256_t nonce, std::string hash, unsigned short target, std::map<std::string, std::string> &votes)
+	: _id(id), _timestamp(timestamp), _prevHash(prevHash), _merkleRoot(merkleRoot), _nonce(nonce), _hash(hash), _target(target), _votes(votes)
 	{ std::cout << "Block C'tor" << std::endl; }
 
 	unsigned int getId() const { return _id; }
@@ -30,7 +30,7 @@ public:
 	boost::multiprecision::uint256_t getNonce() const { return _nonce; }
 	std::string getHash() const { return _hash; }
 	unsigned short getTarget() const { return _target; }
-	const std::unordered_map<std::string, std::string> &getData() { return _data; }
+	const std::map<std::string, std::string> &getVotes() { return _votes; }
 
 	void printBlock() {
 		std::cout << "id         : " << _id << std::endl;
