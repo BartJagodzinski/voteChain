@@ -38,16 +38,16 @@ private:
       [this, self](boost::system::error_code ec, std::size_t /*length*/) {
         if (!ec) {
           std::string message = _readMsg.body();
-          if(message.size() > 81) {
-            std::string sender = message.substr(0, 34);
-            std::string receiver = message.substr(35, 34);
-            std::string timestamp = message.substr(70, 10);
-            std::string nonce = message.substr(81, message.size()-70);
-            std::string hash = picosha2::hash256_hex_string(sender+receiver+timestamp);
-            hash = picosha2::hash256_hex_string(hash+nonce);
+          if(message.size() > 115) {
+            std::string sender = message.substr(0, 51);
+            std::string receiver = message.substr(52, 51);
+            std::string timestamp = message.substr(104, 10);
+            std::string nonce = message.substr(115, message.size()-104);
+            std::string::size_type pos = nonce.find(';');
+            if (pos != std::string::npos) nonce = nonce.substr(0, pos);
+            std::string hash = picosha2::hash256_hex_string(sender+receiver+timestamp+nonce);
             if(sender.at(0) == '1' && receiver.at(0) == '1' && hash.substr(0, _difficulty) == _target.substr(0, _difficulty))
-              _votesToCheck.insert({message.substr(0, 34), message.substr(35, 34)});
-
+              _votesToCheck.insert({message.substr(0, 51), message.substr(52, 51)});
           }
         }
         _room.leave(shared_from_this());
