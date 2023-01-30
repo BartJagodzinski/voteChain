@@ -15,8 +15,6 @@
 
 int main(int argc, char* argv[]) {
 
-
-//*
 	try {
 
 		std::pair<std::string, unsigned short> mempoolIpPort;
@@ -28,21 +26,6 @@ int main(int argc, char* argv[]) {
 		if(!config::getDeadlineFromJson(deadline, "mempool_config.json", "mempool")) { return EXIT_FAILURE; }
 		Mempool mempool(ioContextMempool, mempoolListenEndpoint, deadline);
 		std::thread mempoolThrd([&ioContextMempool](){ ioContextMempool.run(); });
-
-		//if(!mempool.loadVotesFromJson("mempool_load_test.json")) std::cerr << "Error in loading votes from json." << std::endl;
-
-// ------------------------------------------------------------------------------------------------------------------------------------------------------
-	// Checker
-	/*
-		std::pair<std::string, unsigned short> checkerIpPort;
-		if(!config::getEndpointsFromJson(checkerIpPort, "checker_config.json", "checker")) { return EXIT_FAILURE; }
-		boost::asio::io_context ioContextChecker;
-		boost::asio::ip::tcp::endpoint checkerListenEndpoint(boost::asio::ip::address::from_string(checkerIpPort.first), checkerIpPort.second);
-
-		Checker checker(ioContextChecker, checkerListenEndpoint, deadline);
-		std::thread checkerThrd([&ioContextChecker](){ ioContextChecker.run(); });
-	*/
-// ------------------------------------------------------------------------------------------------------------------------------------------------------
 
 		std::string blockchainName;
 		if(!config::getBlockchainNameFromJson(blockchainName, "mempool_config.json", "mempool")) { return EXIT_FAILURE; }
@@ -63,9 +46,7 @@ int main(int argc, char* argv[]) {
 		}
 
 		mempool.close();
-    	mempoolThrd.join();
-		//checker.close();
-    	//checkerThrd.join();
+    		mempoolThrd.join();
 		if(!blockchain.verifyBlockchain()) { std::cerr << "Blockchain is invalid." <<std::endl; return EXIT_FAILURE; }
 
 		std::unordered_map<std::string, unsigned int> results;
@@ -76,5 +57,5 @@ int main(int argc, char* argv[]) {
 
   	} catch (std::exception& e) { std::cerr << "Exception: " << e.what() << std::endl; return EXIT_FAILURE; }
 	return EXIT_SUCCESS;
-//*/
+
 }
