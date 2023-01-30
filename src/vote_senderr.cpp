@@ -12,7 +12,6 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include "message.hpp"
 #include "vote_sender.h"
-#include "security.h"
 #include "picosha2.h"
 #include "address.h"
 #include "config.h"
@@ -92,6 +91,7 @@ int main(int argc, char* argv[]) {
     if(std::time(nullptr) > deadline) { std::cerr << "Voting is over. " << std::endl; return EXIT_FAILURE; }
 
     voteStr = voteStr+":"+std::to_string(timestamp)+":"+nonce.str()+";";
+    std::cout << voteStr << std::endl;
     char vote[voteStr.size()]="";
     std::strcat(vote, voteStr.c_str());
     Message msg;
