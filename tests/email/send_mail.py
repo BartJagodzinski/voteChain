@@ -7,7 +7,7 @@ import ssl
 senderMail = 'your_email@gmail.com'
 password = 'your_password'
 
-smtp = smtplib.SMTP_SSL('smtp.gmail.com', 465, context=ssl.create_default_context())
+smtp = smtplib.SMTP_SSL('smtp.gmail.com', 465, context=ssl._create_unverified_context())
 smtp.login(senderMail, password)
 
 jsonData = []
