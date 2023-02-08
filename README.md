@@ -7,6 +7,13 @@
 **boost** → [https://www.boost.org](https://www.boost.org)     
     
 
+### Usage     
+Linux: make
+macOS: make macOS
+      
+Configure mempool_config.json and checker_config.json     
+command: date +%s to get time in unix time, copy it to "deadline" field in config files. Add as many seconds as you want the voting to last and save both files. Now you can run ./checker and ./node.
+
    
 ### Mempool
 Mempool is constantly listening for new votes (like ballot box) until deadline is reached. Deadline is the end of voting time set before start. When reached, mempool closes for new votes and waits for the accumulated pool of votes to be closed in blocks.   
