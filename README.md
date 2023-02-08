@@ -15,9 +15,9 @@ Configure mempool_config.json and checker_config.json
 command: date +%s to get time in unix time, copy it to "deadline" field in config files. Add as many seconds as you want the voting to last and save both files.      
 Now you can run ./checker and ./node.      
 To run client program ./voter you need to pass 6 arguments exactly in that order:      
-./voter <email> <password> <name> <surname> <id> <choice>      
+./voter email password name surname id choice      
 example:     
-<samplemail1@gmail.com> <password1> <name1> <surname1> <1> <alice>      
+samplemail1@gmail.com password1 name1 surname1 1 alice      
 In whitelist file must be a hash value of these inputs. For example above:       
 {      
      "email" : "ce5d0b9c38390690e96077bc70a43d8c90580a8e617d6cb12bb0c2163d389b1c",      
