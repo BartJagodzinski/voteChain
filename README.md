@@ -8,7 +8,7 @@
     
 
 ### Usage     
-Linux: make
+Linux: make      
 macOS: make macOS
       
 Configure mempool_config.json and checker_config.json     
