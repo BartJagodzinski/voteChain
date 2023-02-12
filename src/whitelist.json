@@ -1,0 +1,22 @@
+{
+    "voters": [
+        {
+            "email" : "samplemail1@gmail.com"
+        },
+        {
+            "email" : "samplemail2@gmail.com"
+        },
+        {
+            "email" : "samplemail3@gmail.com"
+        },
+        {
+            "email" : "samplemail4@gmail.com"
+        },
+        {
+            "email" : "samplemail5@gmail.com"
+        },
+        {
+            "email" : "samplemail6@gmail.com"
+        }
+    ]
+}
