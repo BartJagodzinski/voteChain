@@ -1,11 +1,11 @@
 ## Libraries
      
-**Base58** → [https://gist.github.com/miguelmota/ff591873da4f76393ce48efe62d49fd1](https://gist.github.com/miguelmota/ff591873da4f76393ce48efe62d49fd1)       
+
 **secp256k1** → [https://github.com/bitcoin-core/secp256k1](https://github.com/bitcoin-core/secp256k1)     
 **sha256** → [https://github.com/okdshin/PicoSHA2](https://github.com/okdshin/PicoSHA2)   
 **json** → [https://github.com/nlohmann/json](https://github.com/nlohmann/json)   
 **boost** → [https://www.boost.org](https://www.boost.org)     
-    
+**base58** → [https://gist.github.com/miguelmota/ff591873da4f76393ce48efe62d49fd1](https://gist.github.com/miguelmota/ff591873da4f76393ce48efe62d49fd1)       
 
 ### Usage     
 Linux: make      
